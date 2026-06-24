@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2b1d12">
+<title>2d6 Duels</title>
+<style>
+  :root{
+    --parchment:#f3e9cf;
+    --parchment-dark:#e7d8b2;
+    --ink:#2b1d12;
+    --ink-soft:#5a4632;
+    --gold:#8a6d2f;
+    --blood:#7c2418;
+    --green:#3f5d2e;
+    --line:#bda775;
+    --shadow:rgba(43,29,18,.25);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+    color:var(--ink);
+    background-color:#efe3c5;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"),
+      radial-gradient(circle at 22% 8%, rgba(255,255,255,.45), transparent 42%),
+      radial-gradient(circle at 82% 95%, rgba(140,110,60,.20), transparent 48%),
+      url("__TEXTURE__");
+    background-repeat:repeat,no-repeat,no-repeat,repeat;
+    background-size:150px 150px,cover,cover,440px 440px;
+    background-blend-mode:soft-light,normal,multiply,normal;
+    background-attachment:fixed,fixed,fixed,fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- Woodcut artwork from the game ---------- */
+  .woodcut{mix-blend-mode:multiply;display:block;height:auto}
+  .hero{width:62%;max-width:250px;margin:2px auto 14px;filter:contrast(1.04)}
+  .divider-img{width:210px;max-width:72%;margin:8px auto;opacity:.92}
+  .art-sm{width:55%;max-width:230px;margin:8px auto}
+  .art-inline{width:46%;max-width:200px;margin:6px auto 2px}
+  .wrap{max-width:760px;margin:0 auto;padding:18px 16px 64px}
+  /* ---------- Titles ---------- */
+  .script{font-family:"Snell Roundhand","Apple Chancery","Segoe Script",cursive}
+  header.app{text-align:center;margin:6px 0 18px}
+  header.app h1{
+    font-family:"Snell Roundhand","Apple Chancery","Segoe Script",cursive;
+    font-size:clamp(40px,11vw,68px);
+    margin:0;line-height:.95;color:var(--ink);
+    text-shadow:1px 1px 0 rgba(255,255,255,.5);
+  }
+  header.app .tag{font-style:italic;color:var(--ink-soft);margin-top:2px;font-size:15px}
+  h2.section{
+    font-family:"Snell Roundhand","Apple Chancery","Segoe Script",cursive;
+    font-size:34px;text-align:center;margin:6px 0 14px;font-weight:400;
+  }
+  /* ---------- Cards / frames ---------- */
+  .frame{
+    border:2px solid var(--ink);
+    box-shadow:0 0 0 4px var(--parchment),0 0 0 6px var(--ink),0 8px 20px var(--shadow);
+    background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);
+    border-radius:3px;padding:16px;margin:14px 4px;
+  }
+  .panel{
+    border:1.5px solid var(--line);border-radius:6px;
+    background:rgba(255,255,255,.22);padding:14px;margin:12px 0;
+    box-shadow:inset 0 0 24px rgba(255,255,255,.25);
+  }
+  /* ---------- Buttons ---------- */
+  button{font-family:inherit;cursor:pointer}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:1.5px solid var(--ink);background:var(--parchment-dark);color:var(--ink);
+    padding:12px 18px;border-radius:6px;font-size:17px;font-weight:600;
+    box-shadow:0 2px 0 var(--ink),0 4px 8px var(--shadow);
+    transition:transform .05s ease, box-shadow .05s ease;width:100%;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+  .btn.primary{background:var(--ink);color:var(--parchment)}
+  .btn.gold{background:var(--gold);color:#fff;border-color:#5e4a1f}
+  .btn.blood{background:var(--blood);color:#fff;border-color:#4a160f}
+  .btn.ghost{background:transparent;box-shadow:none;border-style:dashed;font-weight:500}
+  .btn.sm{padding:8px 12px;font-size:14px;width:auto}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-row .btn{flex:1 1 0;min-width:130px}
+  /* ---------- Menu ---------- */
+  .menu .btn{margin:10px 0;padding:18px;font-size:19px}
+  .menu .sub{font-size:13px;font-weight:400;font-style:italic;opacity:.8;display:block;margin-top:3px}
+  .menu-btn{flex-direction:column;align-items:center;gap:2px}
+  /* ---------- Forms ---------- */
+  label.fld{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:10px 0 4px}
+  input[type=text]{
+    width:100%;font-family:inherit;font-size:18px;padding:10px 12px;
+    border:1.5px solid var(--line);border-radius:6px;background:rgba(255,255,255,.5);color:var(--ink);
+  }
+  input[type=text]:focus{outline:none;border-color:var(--gold)}
+  /* ---------- Stat chips ---------- */
+  .stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .chip{
+    border:1.5px solid var(--ink);border-radius:20px;padding:4px 12px;font-size:14px;
+    background:var(--parchment-dark);display:inline-flex;gap:6px;align-items:center;
+  }
+  .chip b{font-size:16px}
+  .chip.blood{background:#f0d6cf;border-color:var(--blood);color:var(--blood)}
+  .chip.gold{background:#efe2bd;border-color:var(--gold);color:#5e4a1f}
+  .muted{color:var(--ink-soft)}
+  .small{font-size:13px}
+  .center{text-align:center}
+  .divider{height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 8px,transparent 8px 14px);margin:14px 0;border:0}
+  /* ---------- Roster ---------- */
+  .duelist-card{position:relative}
+  .duelist-card h3{margin:0 0 2px;font-size:22px}
+  .duelist-card .meta{font-style:italic;color:var(--ink-soft);font-size:14px;margin-bottom:6px}
+  .card-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .badge{position:absolute;top:10px;right:12px;font-size:12px;background:var(--gold);color:#fff;padding:2px 9px;border-radius:12px}
+  /* ---------- Dice ---------- */
+  .dice-area{display:flex;justify-content:center;gap:14px;margin:10px 0;min-height:54px;align-items:center;flex-wrap:wrap}
+  .die{
+    width:46px;height:46px;border-radius:9px;background:#fbf4e0;border:2px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;position:relative;
+    box-shadow:0 3px 0 var(--ink),0 5px 8px var(--shadow);
+  }
+  .die.rolling{animation:shake .5s ease}
+  @keyframes shake{
+    0%,100%{transform:translateY(0) rotate(0)}
+    20%{transform:translateY(-8px) rotate(-12deg)}
+    40%{transform:translateY(2px) rotate(10deg)}
+    60%{transform:translateY(-5px) rotate(-6deg)}
+    80%{transform:translateY(1px) rotate(4deg)}
+  }
+  .pip{width:8px;height:8px;border-radius:50%;background:var(--ink);position:absolute}
+  .plus{font-size:22px;font-weight:700;align-self:center}
+  /* combat duel layout */
+  .vs-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch}
+  .fighter{
+    border:2px solid var(--ink);border-radius:8px;padding:10px;background:rgba(255,255,255,.28);
+    box-shadow:0 4px 10px var(--shadow);transition:all .2s;
+  }
+  .fighter.attacker{box-shadow:0 0 0 3px var(--gold),0 4px 10px var(--shadow);background:#f6ecc9}
+  .fighter.dead{filter:grayscale(1);opacity:.5}
+  .fighter h3{margin:0 0 4px;font-size:18px;line-height:1.1}
+  .fighter .role{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:700;min-height:14px}
+  .fighter .ministats{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.5}
+  .vsmid{display:flex;align-items:center;justify-content:center;font-family:"Snell Roundhand",cursive;font-size:30px;color:var(--ink-soft)}
+  .hp-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+  .tg{font-size:10px;border:1px solid var(--ink-soft);border-radius:8px;padding:1px 6px;background:rgba(255,255,255,.4)}
+  .tg.blood{border-color:var(--blood);color:var(--blood);background:#f3dad4}
+  .tg.maim{border-color:var(--gold);color:#5e4a1f;background:#efe2bd}
+  /* result banner */
+  .banner{
+    text-align:center;padding:14px;border-radius:8px;margin:12px 0;border:2px solid var(--ink);
+    font-size:18px;animation:pop .25s ease;
+  }
+  @keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+  .banner.hit{background:#efe2bd;border-color:var(--gold)}
+  .banner.kill{background:#f0d6cf;border-color:var(--blood);color:var(--blood)}
+  .banner.parry{background:#dfe7d2;border-color:var(--green);color:var(--green)}
+  .banner.info{background:rgba(255,255,255,.4)}
+  .banner b{display:block;font-size:21px;margin-bottom:3px}
+  /* log */
+  .log{margin-top:14px}
+  .log h4{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)}
+  .log-list{max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:rgba(255,255,255,.2);font-size:14px}
+  .log-list .li{padding:4px 0;border-bottom:1px dotted var(--line);line-height:1.4}
+  .log-list .li:last-child{border-bottom:0}
+  .log-list .rnd{font-weight:700;color:var(--gold);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-top:6px}
+  .back{background:none;border:none;color:var(--ink-soft);font-size:15px;padding:6px 0;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+  .empty{text-align:center;font-style:italic;color:var(--ink-soft);padding:24px 8px}
+  .pick-list .duelist-card{cursor:pointer}
+  .pick-list .duelist-card.selA{box-shadow:0 0 0 3px var(--gold),0 8px 20px var(--shadow)}
+  .pick-list .duelist-card.selB{box-shadow:0 0 0 3px var(--blood),0 8px 20px var(--shadow)}
+  .selnum{position:absolute;top:8px;right:10px;font-size:13px;font-weight:700;background:var(--ink);color:var(--parchment);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+  .hide{display:none!important}
+  /* ---------- Mode toggle ---------- */
+  .mode-toggle{margin:10px 4px 2px;text-align:center}
+  .mode-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:6px}
+  .seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:8px;overflow:hidden;box-shadow:0 2px 0 var(--ink)}
+  .seg-btn{font-family:inherit;font-size:15px;font-weight:600;padding:9px 14px;border:0;background:var(--parchment-dark);color:var(--ink);cursor:pointer}
+  .seg-btn+.seg-btn{border-left:1.5px solid var(--ink)}
+  .seg-btn.active{background:var(--ink);color:var(--parchment)}
+  .mode-hint{font-size:12.5px;font-style:italic;color:var(--ink-soft);margin-top:7px;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.4}
+  /* ---------- Manual dice input ---------- */
+  .manual{border:1.5px dashed var(--gold);border-radius:8px;padding:12px;background:rgba(255,255,255,.3)}
+  .manual-title{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);font-weight:700;text-align:center;margin-bottom:10px}
+  .manual-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0;flex-wrap:wrap}
+  .manual-lbl{font-size:15px;font-weight:600;flex:1 1 120px}
+  .manual-dice{display:flex;align-items:center;gap:7px}
+  .dieinput{width:50px;height:50px;text-align:center;font-family:inherit;font-size:22px;font-weight:700;
+    border:2px solid var(--line);border-radius:9px;background:#fbf4e0;color:var(--ink);
+    -moz-appearance:textfield;box-shadow:0 2px 0 var(--ink-soft)}
+  .dieinput::-webkit-outer-spin-button,.dieinput::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .dieinput:focus{outline:none;border-color:var(--gold)}
+  .dieinput.good{border-color:var(--green);background:#eef2e4}
+  .dieinput.bad{border-color:var(--blood);background:#f4dcd6}
+  .manual-total{font-size:13px;color:var(--ink-soft);min-width:58px}
+  #manual-confirm{margin-top:10px}
+  .ornament{text-align:center;color:var(--gold);font-size:20px;letter-spacing:6px;margin:4px 0}
+  footer{text-align:center;font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <h1>2d6 Duels</h1>
+    <div class="tag">Um esporte mortal para uma era civilizada</div>
+  </header>
+
+  <!-- ============ HOME ============ -->
+  <section id="screen-home">
+    <img class="woodcut hero" src="__COVER__" alt="Duelista contra a Morte">
+    <div class="frame menu">
+      <img class="woodcut divider-img" src="__SWORDS__" alt="">
+      <button class="btn primary menu-btn" onclick="go('duel-setup')">
+        ⚔ Duelar
+        <span class="sub">Escolha dois duelistas e lute</span>
+      </button>
+      <button class="btn menu-btn" onclick="go('roster')">
+        🪶 Forja de Duelistas
+        <span class="sub">Gerar, ver e evoluir combatentes</span>
+      </button>
+      <button class="btn ghost menu-btn" onclick="go('rules')">
+        📜 Regras
+        <span class="sub">Como o duelo funciona</span>
+      </button>
+      <img class="woodcut divider-img" src="__SWORDS__" alt="">
+      <div class="mode-toggle">
+        <div class="mode-title">Modo de rolagem</div>
+        <div class="seg">
+          <button id="mode-auto" class="seg-btn" onclick="setMode(false)">🎲 Automático</button>
+          <button id="mode-manual" class="seg-btn" onclick="setMode(true)">✍ Dados físicos</button>
+        </div>
+        <div class="mode-hint" id="mode-hint"></div>
+      </div>
+    </div>
+    <footer>by Tito B.A. — app de mesa para jogar no mesmo aparelho</footer>
+  </section>
+
+  <!-- ============ ROSTER ============ -->
+  <section id="screen-roster" class="hide">
+    <button class="back" onclick="go('home')">‹ Menu</button>
+    <h2 class="section">Forja de Duelistas</h2>
+    <img class="woodcut divider-img" src="__SWORDS__" alt="">
+    <div class="btn-row" style="margin-bottom:6px">
+      <button class="btn gold" onclick="openGenerator()">✨ Gerar novo duelista</button>
+    </div>
+    <div id="roster-list"></div>
+  </section>
+
+  <!-- ============ GENERATOR ============ -->
+  <section id="screen-generator" class="hide">
+    <button class="back" onclick="go('roster')">‹ Forja</button>
+    <h2 class="section">Novo Duelista</h2>
+    <div class="frame">
+      <img class="woodcut art-inline" src="__HATS__" alt="Chapéus com penas">
+      <label class="fld">Nome</label>
+      <input type="text" id="gen-name" placeholder="Ex.: Dom Esgrimício de Valverde" maxlength="40">
+      <button class="btn ghost sm" style="margin-top:8px;width:auto" onclick="randomName()">🎲 Nome aleatório</button>
+      <hr class="divider">
+      <p class="small muted center">Role o destino do seu duelista. Tudo é decidido pelos dados, como manda a honra.</p>
+      <div id="gen-result"></div>
+      <button class="btn primary" id="gen-roll-btn" onclick="rollGeneration()">🎲 Rolar criação</button>
+      <div id="gen-save" class="hide" style="margin-top:12px">
+        <button class="btn gold" onclick="saveGenerated()">✓ Salvar na Forja</button>
+        <button class="btn ghost sm" style="margin-top:8px;width:100%" onclick="rollGeneration()">↻ Rolar tudo de novo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DUEL SETUP ============ -->
+  <section id="screen-duel-setup" class="hide">
+    <button class="back" onclick="go('home')">‹ Menu</button>
+    <h2 class="section">Escolher Combatentes</h2>
+    <img class="woodcut art-sm" src="__FENCERS__" alt="Esgrimistas">
+    <p class="center small muted">Toque em dois duelistas: o <b style="color:var(--gold)">1º</b> e o <b style="color:var(--blood)">2º</b>.</p>
+    <div id="pick-list" class="pick-list"></div>
+    <div class="frame hide" id="duel-start-frame">
+      <div class="center" id="matchup-text"></div>
+      <button class="btn blood" style="margin-top:12px" onclick="startDuel()">⚔ Iniciar o Duelo</button>
+    </div>
+  </section>
+
+  <!-- ============ COMBAT ============ -->
+  <section id="screen-combat" class="hide">
+    <button class="back" onclick="if(confirm('Abandonar o duelo?'))go('home')">‹ Encerrar</button>
+    <h2 class="section">Duelo</h2>
+    <img class="woodcut divider-img" src="__SWORDS__" alt="">
+    <div class="vs-grid" id="combat-fighters"></div>
+
+    <div class="frame">
+      <div class="center small muted" id="round-label">Round 1</div>
+      <div class="dice-area" id="dice-area"></div>
+      <div id="combat-banner"></div>
+      <div id="combat-controls"></div>
+    </div>
+
+    <div class="log">
+      <h4>Crônica do Duelo</h4>
+      <div class="log-list" id="combat-log"></div>
+    </div>
+  </section>
+
+  <!-- ============ RULES ============ -->
+  <section id="screen-rules" class="hide">
+    <button class="back" onclick="go('home')">‹ Menu</button>
+    <h2 class="section">As Regras</h2>
+    <img class="woodcut art-sm" src="__DUO__" alt="Dois duelistas">
+    <div class="panel">
+      <h3 class="script" style="margin:0 0 6px;font-size:26px">Iniciativa</h3>
+      <p class="small">Cada duelista rola <b>2d6 + bônus de iniciativa</b> (menos penalidades de ferimentos). O maior começa; em empate, rola de novo. Quem vence é o <b>atacante</b>.</p>
+    </div>
+    <div class="panel">
+      <h3 class="script" style="margin:0 0 6px;font-size:26px">Combate</h3>
+      <p class="small">O atacante rola <b>2d6 + combate</b> contra a mesma rolagem do defensor:</p>
+      <ul class="small">
+        <li><b>Atacante &gt; 2× defensor:</b> o defensor <b style="color:var(--blood)">morre</b> na hora.</li>
+        <li><b>Atacante &gt; defensor:</b> acerto → tabela de Feridas. Rola iniciativa de novo se o alvo sobreviver.</li>
+        <li><b>Atacante ≤ defensor:</b> golpe <b style="color:var(--green)">aparado</b> → o defensor contra-ataca. Depois rola iniciativa de novo.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3 class="script" style="margin:0 0 6px;font-size:26px">Feridas</h3>
+      <p class="small"><i>Onde acerta (1d6):</i> 1 Cabeça · 2 Braço Dir. · 3 Braço Esq. · 4 Torso · 5 Perna Esq. · 6 Perna Dir.</p>
+      <p class="small"><i>O que faz (1d6):</i></p>
+      <ul class="small">
+        <li><b>1-2:</b> arranhão leve.</li>
+        <li><b>3-4:</b> local mutilado — pode largar arma, ser cegado etc. <b>-1 cumulativo</b> em iniciativa e combate.</li>
+        <li><b>5-6:</b> ferida profunda — sangra até a morte em <b>1d6 rounds</b>, mas pode continuar lutando.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3 class="script" style="margin:0 0 6px;font-size:26px">Evolução</h3>
+      <p class="small">Role 1d6 na criação e a cada dois duelos sobrevividos: <b>1-2</b> +1 iniciativa · <b>3-4</b> +1 combate · <b>5-6</b> ganha o poder de rerolar efeitos de ferida.</p>
+    </div>
+    <img class="woodcut art-sm" src="__FENCERS__" alt="Esgrimistas" style="margin-top:14px">
+    <footer>2d6 Duels — by Tito B.A.</footer>
+  </section>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   DADOS DE REFERÊNCIA (traduzidos do PDF)
+============================================================ */
+const HONOR = {
+  2:"Laços com a classe dominante (Pela Rainha!)",
+  3:"Instância política",
+  4:"Interesses amorosos",
+  5:"Religião",
+  6:"Preferência de marca de cerveja",
+  7:"Nacionalidade",
+  8:"Esportes",
+  9:"Nome de família",
+  10:"Dinheiro",
+  11:"Aparência e vestimenta",
+  12:"Outro — escolha livremente"
+};
+const STYLE = {
+  1:"Rápido e indolor — mira nos pontos vitais sempre que possível",
+  2:"Sádico — só você iria atrás de um golpe na virilha!",
+  3:"Atlético — pendurado no lustre",
+  4:"Sujo — morde a orelha e enfia o dedo no olho",
+  5:"Metódico — conforme os melhores manuais",
+  6:"Heroico — posso fazer isso o dia todo!"
+};
+const WOUND_LOC = {1:"a Cabeça",2:"o Braço Direito",3:"o Braço Esquerdo",4:"o Torso",5:"a Perna Esquerda",6:"a Perna Direita"};
+const MAIM_FLAVOR = {
+  1:"é cegado — não enxerga direito",
+  2:"larga a arma da mão direita",
+  3:"larga a arma da mão esquerda",
+  4:"tem as costelas estilhaçadas",
+  5:"tem o joelho esquerdo despedaçado",
+  6:"tem o joelho direito despedaçado"
+};
+const NAMES_A=["Dom","Sir","Lorde","Mestre","Barão","Visconde","Capitão","O Velho","Madame","Dama"];
+const NAMES_B=["Esgrimício","Reginaldo","Bartolomeu","Anselmo","Gualter","Inácio","Teobaldo","Vitória","Constança","Brunilda","Heitor","Aurélio"];
+const NAMES_C=["de Valverde","das Sombras","Punho-de-Ferro","o Implacável","da Cruz","Sangue-Frio","de Aragão","Lâmina-Rápida","o Pomposo","de Montecervo","Mão-Esquerda","o Insolente"];
+
+/* ============================================================
+   ESTADO / PERSISTÊNCIA
+============================================================ */
+const STORE_KEY="duels2d6_roster_v1";
+const MANUAL_KEY="duels2d6_manual";
+let roster=loadRoster();
+let pending=null;       // duelista sendo gerado
+let pick=[];            // ids escolhidos para o duelo
+let combat=null;        // estado do combate atual
+let manualMode=loadManual();  // dados físicos: o usuário rola e digita os resultados
+
+function loadRoster(){
+  try{return JSON.parse(localStorage.getItem(STORE_KEY))||[]}catch(e){return[]}
+}
+function saveRoster(){
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(roster))}catch(e){
+    alert("Não foi possível salvar (armazenamento bloqueado).");
+  }
+}
+function loadManual(){try{return localStorage.getItem(MANUAL_KEY)==='1'}catch(e){return false}}
+function saveManual(){try{localStorage.setItem(MANUAL_KEY, manualMode?'1':'0')}catch(e){}}
+function setMode(m){manualMode=m;saveManual();updateModeUI();}
+function updateModeUI(){
+  const a=document.getElementById('mode-auto'), mn=document.getElementById('mode-manual'), h=document.getElementById('mode-hint');
+  if(!a)return;
+  a.classList.toggle('active',!manualMode);
+  mn.classList.toggle('active',manualMode);
+  h.textContent = manualMode
+    ? '✍ Vocês rolam os dados de verdade e digitam os resultados — o app julga o que acontece.'
+    : '🎲 O app rola os dados automaticamente para vocês.';
+}
+
+/* ============================================================
+   DADOS
+============================================================ */
+function d6(){return Math.floor(Math.random()*6)+1}
+function roll2d6(){const a=d6(),b=d6();return{a,b,sum:a+b}}
+function applyUpgrade(d,r){
+  if(r<=2){d.init+=1;return"+1 Iniciativa"}
+  if(r<=4){d.combat+=1;return"+1 Combate"}
+  d.rerollWounds=true;return"Pode rerolar efeitos de ferida";
+}
+
+/* ============================================================
+   NAVEGAÇÃO
+============================================================ */
+function go(name){
+  document.querySelectorAll('section[id^="screen-"]').forEach(s=>s.classList.add('hide'));
+  document.getElementById('screen-'+name).classList.remove('hide');
+  window.scrollTo(0,0);
+  if(name==='home')updateModeUI();
+  if(name==='roster')renderRoster();
+  if(name==='duel-setup'){pick=[];renderPickList();}
+}
+
+/* ============================================================
+   GERAÇÃO DE DUELISTA
+============================================================ */
+function randomName(){
+  const n=pickRand(NAMES_A)+" "+pickRand(NAMES_B)+" "+pickRand(NAMES_C);
+  document.getElementById('gen-name').value=n;
+}
+function pickRand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+
+function openGenerator(){
+  pending=null;
+  document.getElementById('gen-name').value="";
+  document.getElementById('gen-result').innerHTML="";
+  document.getElementById('gen-save').classList.add('hide');
+  document.getElementById('gen-roll-btn').classList.remove('hide');
+  go('generator');
+}
+
+function rollGeneration(){
+  const upRoll=d6();
+  const d={
+    id:"d"+Date.now()+Math.floor(Math.random()*999),
+    name:"",
+    init:0, combat:0, rerollWounds:false,
+    feathers:d6(),
+    honor:roll2d6().sum,
+    style:d6(),
+    duelsSurvived:0,
+    created:Date.now()
+  };
+  const upText=applyUpgrade(d,upRoll);
+  pending=d;
+  pending._upRoll=upRoll;
+  pending._upText=upText;
+  renderGenResult();
+  document.getElementById('gen-roll-btn').classList.add('hide');
+  document.getElementById('gen-save').classList.remove('hide');
+}
+
+function renderGenResult(){
+  const d=pending;
+  document.getElementById('gen-result').innerHTML=`
+    <div class="panel" style="margin-top:12px">
+      <div class="center"><span class="chip gold">🎲 Criação: ${d._upRoll} → <b>${d._upText}</b></span></div>
+      <div class="stats" style="justify-content:center;margin-top:12px">
+        <span class="chip">Iniciativa <b>${fmt(d.init)}</b></span>
+        <span class="chip">Combate <b>${fmt(d.combat)}</b></span>
+        ${d.rerollWounds?'<span class="chip gold">↻ Rerola feridas</span>':''}
+      </div>
+      <hr class="divider">
+      <p class="small"><b>🪶 Penas no chapéu:</b> ${d.feathers}</p>
+      <p class="small"><b>⚜ Honra baseada em:</b> ${HONOR[d.honor]} <span class="muted">(${d.honor})</span></p>
+      <p class="small"><b>⚔ Estilo de luta:</b> ${STYLE[d.style]}</p>
+    </div>`;
+}
+
+function saveGenerated(){
+  let name=document.getElementById('gen-name').value.trim();
+  if(!name){name=pickRand(NAMES_A)+" "+pickRand(NAMES_B)+" "+pickRand(NAMES_C);}
+  pending.name=name;
+  delete pending._upRoll;delete pending._upText;
+  roster.push(pending);
+  saveRoster();
+  pending=null;
+  go('roster');
+}
+
+/* ============================================================
+   ROSTER
+============================================================ */
+function fmt(n){return (n>=0?"+":"")+n}
+
+function renderRoster(){
+  const el=document.getElementById('roster-list');
+  if(roster.length===0){
+    el.innerHTML=`<div class="empty">Nenhum duelista forjado ainda.<br>Toque em <b>Gerar novo duelista</b> para começar.</div>`;
+    return;
+  }
+  el.innerHTML=roster.map(d=>`
+    <div class="frame duelist-card">
+      <h3>${esc(d.name)}</h3>
+      <div class="meta">${STYLE[d.style].split(' — ')[0]} · ${d.feathers} pena(s) no chapéu</div>
+      <div class="stats">
+        <span class="chip">Iniciativa <b>${fmt(d.init)}</b></span>
+        <span class="chip">Combate <b>${fmt(d.combat)}</b></span>
+        ${d.rerollWounds?'<span class="chip gold">↻ Feridas</span>':''}
+        <span class="chip">Duelos <b>${d.duelsSurvived}</b></span>
+      </div>
+      <p class="small muted" style="margin:8px 0 0">⚜ Honra: ${HONOR[d.honor]}</p>
+      <div class="card-actions">
+        <button class="btn gold sm" onclick="evolve('${d.id}')">⬆ Evoluir</button>
+        <button class="btn ghost sm" onclick="delDuelist('${d.id}')">🗑 Excluir</button>
+      </div>
+    </div>`).join('');
+}
+
+function evolve(id){
+  const d=roster.find(x=>x.id===id);if(!d)return;
+  const r=d6();
+  const txt=applyUpgrade(d,r);
+  saveRoster();renderRoster();
+  alert(`${d.name} evolui!\n\n🎲 ${r} → ${txt}`);
+}
+
+function delDuelist(id){
+  const d=roster.find(x=>x.id===id);if(!d)return;
+  if(!confirm(`Excluir ${d.name}?`))return;
+  roster=roster.filter(x=>x.id!==id);
+  saveRoster();renderRoster();
+}
+
+/* ============================================================
+   DUEL SETUP — escolher 2
+============================================================ */
+function renderPickList(){
+  const el=document.getElementById('pick-list');
+  if(roster.length<2){
+    el.innerHTML=`<div class="empty">Você precisa de pelo menos <b>2 duelistas</b> na Forja.<br><button class="btn gold sm" style="margin-top:12px;width:auto;display:inline-flex" onclick="go('roster')">Ir para a Forja</button></div>`;
+    document.getElementById('duel-start-frame').classList.add('hide');
+    return;
+  }
+  el.innerHTML=roster.map(d=>{
+    const idx=pick.indexOf(d.id);
+    const cls=idx===0?'selA':idx===1?'selB':'';
+    return `
+    <div class="frame duelist-card ${cls}" onclick="togglePick('${d.id}')">
+      ${idx>=0?`<div class="selnum">${idx+1}º</div>`:''}
+      <h3>${esc(d.name)}</h3>
+      <div class="meta">${STYLE[d.style].split(' — ')[0]}</div>
+      <div class="stats">
+        <span class="chip">Init <b>${fmt(d.init)}</b></span>
+        <span class="chip">Combate <b>${fmt(d.combat)}</b></span>
+        ${d.rerollWounds?'<span class="chip gold">↻</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+  updateStartFrame();
+}
+function togglePick(id){
+  const i=pick.indexOf(id);
+  if(i>=0)pick.splice(i,1);
+  else{ if(pick.length>=2)pick.shift(); pick.push(id); }
+  renderPickList();
+}
+function updateStartFrame(){
+  const f=document.getElementById('duel-start-frame');
+  if(pick.length===2){
+    const a=roster.find(x=>x.id===pick[0]),b=roster.find(x=>x.id===pick[1]);
+    document.getElementById('matchup-text').innerHTML=`<span style="font-size:20px"><b>${esc(a.name)}</b></span><div class="vsmid" style="font-size:22px;margin:2px 0">vs</div><span style="font-size:20px"><b>${esc(b.name)}</b></span>`;
+    f.classList.remove('hide');
+  }else f.classList.add('hide');
+}
+
+/* ============================================================
+   COMBATE
+============================================================ */
+function mkFighter(src){
+  return {
+    id:src.id, name:src.name,
+    init:src.init, combat:src.combat,
+    rerollWounds:src.rerollWounds,
+    penalty:0,          // -1 cumulativo por mutilação
+    bleed:null,         // rounds até morrer (ferida profunda)
+    wounds:[],          // lista de descrições
+    alive:true,
+    srcId:src.id
+  };
+}
+
+function startDuel(){
+  const a=roster.find(x=>x.id===pick[0]),b=roster.find(x=>x.id===pick[1]);
+  combat={
+    A:mkFighter(a), B:mkFighter(b),
+    round:0, attacker:null, phase:'init', log:[]
+  };
+  go('combat');
+  renderCombat();
+  setBanner('info',`<b>Às armas!</b>${manualMode?'Modo dados físicos: rolem os dados de verdade e informem os valores.':'Modo automático: o app rola por vocês.'} Comece pela iniciativa.`);
+  setControls(`<button class="btn primary" onclick="rollInitiative()">🎲 ${manualMode?'Iniciar iniciativa':'Rolar Iniciativa'}</button>`);
+  clearDice();
+}
+
+function fighterByKey(k){return combat[k]}
+function otherKey(k){return k==='A'?'B':'A'}
+
+/* helpers de rolagem (separam "rolar" de "resolver" p/ suportar dados físicos) */
+function mkRoll(a,b){return {a,b,sum:a+b};}
+function withMods(raw,bonus,pen,name){return {...raw,name,bonus,pen,total:raw.sum+bonus-pen};}
+
+/* manualPrompt: em modo manual, pede ao usuário os valores dos dados.
+   fields: [{key,label,count}]  ->  onConfirm({key:[v1,...]}) */
+function manualPrompt(title,fields,onConfirm){
+  let html=`<div class="manual"><div class="manual-title">✍ ${title}</div>`;
+  fields.forEach(f=>{
+    html+=`<div class="manual-row"><span class="manual-lbl">${esc(f.label)}</span><span class="manual-dice">`;
+    for(let i=0;i<f.count;i++){
+      html+=`<input class="dieinput" data-k="${f.key}" data-i="${i}" type="number" min="1" max="6" inputmode="numeric" placeholder="?" oninput="validateManual()" onkeydown="if(event.key==='Enter')submitManual()">`;
+    }
+    if(f.count>1) html+=`<span class="manual-total" id="mt-${f.key}">soma –</span>`;
+    html+=`</span></div>`;
+  });
+  html+=`<button class="btn primary" id="manual-confirm" disabled onclick="submitManual()">✓ Confirmar resultado</button></div>`;
+  setControls(html);
+  combat._mFields=fields; combat._mConfirm=onConfirm;
+  setTimeout(()=>{const fi=document.querySelector('.dieinput');if(fi)fi.focus();},30);
+}
+function validateManual(){
+  const fields=combat._mFields; if(!fields)return;
+  let allOk=true;
+  fields.forEach(f=>{
+    let sum=0, ok=true;
+    for(let i=0;i<f.count;i++){
+      const el=document.querySelector(`.dieinput[data-k="${f.key}"][data-i="${i}"]`);
+      const v=parseInt(el.value,10), good=(v>=1&&v<=6);
+      if(!good){ok=false;allOk=false;} else sum+=v;
+      el.classList.toggle('bad', el.value!=='' && !good);
+      el.classList.toggle('good', good);
+    }
+    if(f.count>1){const t=document.getElementById('mt-'+f.key); if(t)t.textContent= ok?('soma '+sum):'soma –';}
+  });
+  const btn=document.getElementById('manual-confirm'); if(btn)btn.disabled=!allOk;
+}
+function submitManual(){
+  const fields=combat._mFields, cb=combat._mConfirm; if(!fields||!cb)return;
+  const vals={}; let ok=true;
+  fields.forEach(f=>{ vals[f.key]=[];
+    for(let i=0;i<f.count;i++){
+      const el=document.querySelector(`.dieinput[data-k="${f.key}"][data-i="${i}"]`);
+      const v=parseInt(el.value,10); if(!(v>=1&&v<=6))ok=false; vals[f.key].push(v);
+    }});
+  if(!ok)return;
+  combat._mFields=null; combat._mConfirm=null;
+  cb(vals);
+}
+
+/* ---- INICIATIVA ---- */
+function rollInitiative(){
+  combat.round++;
+  logRound(combat.round);
+  if(!processBleed())return; // se alguém morreu sangrando, encerra
+  askInitiative();
+}
+function askInitiative(){
+  if(manualMode){
+    setBanner('info',`<b>Round ${combat.round} — Iniciativa</b>Cada duelista rola 2d6 — informem os valores.`);
+    manualPrompt('Iniciativa — 2d6 para cada',[
+      {key:'A',label:combat.A.name,count:2},
+      {key:'B',label:combat.B.name,count:2},
+    ], v=>finishInitiative(mkRoll(v.A[0],v.A[1]), mkRoll(v.B[0],v.B[1])));
+  }else{
+    finishInitiative(mkRoll(d6(),d6()), mkRoll(d6(),d6()));
+  }
+}
+function finishInitiative(rawA,rawB){
+  const A=combat.A, B=combat.B;
+  const rA=withMods(rawA,A.init,A.penalty,A.name);
+  const rB=withMods(rawB,B.init,B.penalty,B.name);
+  showDice('Iniciativa',[rA,rB]);
+  if(rA.total===rB.total){
+    log(`Iniciativa empatada em ${rA.total} — rola novamente.`);
+    setBanner('info',`<b>Empate na iniciativa (${rA.total})!</b>${manualMode?'Rolem 2d6 novamente e informem.':'Rolando de novo...'}`);
+    askInitiative();
+    return;
+  }
+  combat.attacker = rA.total>rB.total ? 'A':'B';
+  const atk=combat[combat.attacker];
+  log(`Iniciativa — ${A.name}: ${rA.total} vs ${B.name}: ${rB.total}. <b>${atk.name}</b> ataca.`);
+  combat.phase='attack';
+  renderCombat();
+  setBanner('info',`<b>${esc(atk.name)} venceu a iniciativa!</b>${manualMode?'Role 2d6 do ataque e informe.':'Toque para desferir o ataque.'}`);
+  setControls(`<button class="btn blood" onclick="rollAttack('${combat.attacker}',false)">⚔ ${manualMode?'Informar':'Rolar'} ataque de ${esc(atk.name)}</button>`);
+}
+
+/* ---- ATAQUE ---- */
+function rollAttack(attackerKey,isCounter){
+  const defKey=otherKey(attackerKey);
+  const atk=combat[attackerKey], def=combat[defKey];
+  if(manualMode){
+    setBanner('info',`<b>${isCounter?'Contra-ataque':'Ataque'}</b>Atacante e defensor rolam 2d6 — informem os valores.`);
+    manualPrompt((isCounter?'Contra-ataque':'Ataque')+' — 2d6 cada',[
+      {key:'atk',label:atk.name+' ⚔ atacante',count:2},
+      {key:'def',label:def.name+' 🛡 defensor',count:2},
+    ], v=>finishAttack(attackerKey,isCounter,mkRoll(v.atk[0],v.atk[1]),mkRoll(v.def[0],v.def[1])));
+  }else{
+    finishAttack(attackerKey,isCounter,mkRoll(d6(),d6()),mkRoll(d6(),d6()));
+  }
+}
+function finishAttack(attackerKey,isCounter,rawA,rawD){
+  const defKey=otherKey(attackerKey);
+  const atk=combat[attackerKey], def=combat[defKey];
+  const rA=withMods(rawA,atk.combat,atk.penalty,atk.name);
+  const rD=withMods(rawD,def.combat,def.penalty,def.name);
+  // exibe sempre A à esquerda e B à direita (casa com o tabuleiro)
+  const left=attackerKey==='A'?rA:rD, right=attackerKey==='A'?rD:rA;
+  showDice(isCounter?'Contra-ataque':'Ataque',[left,right]);
+
+  log(`${isCounter?'Contra-ataque':'Ataque'} — ${atk.name}: ${rA.total} vs ${def.name}: ${rD.total}.`);
+
+  if(rA.total > 2*rD.total){
+    // morte instantânea
+    def.alive=false;
+    log(`💀 ${atk.name} rolou mais que o dobro! <b>${def.name} morre instantaneamente.</b>`);
+    renderCombat();
+    setBanner('kill',`<b>☠ Golpe fatal!</b>${esc(atk.name)} rolou ${rA.total}, mais que o dobro de ${rD.total}. ${esc(def.name)} tomba sem vida.`);
+    endDuel(attackerKey);
+    return;
+  }
+  if(rA.total > rD.total){
+    // acerto -> ferida
+    setBanner('hit',`<b>Acerto!</b>${esc(atk.name)} (${rA.total}) supera ${esc(def.name)} (${rD.total}). ${manualMode?'Role o ferimento e informe.':'Role o ferimento.'}`);
+    combat.phase='wound';
+    combat._woundOn=defKey; combat._woundBy=attackerKey;
+    setControls(`<button class="btn gold" onclick="rollWound()">🩸 ${manualMode?'Informar':'Rolar'} ferida em ${esc(def.name)}</button>`);
+    return;
+  }
+  // aparado
+  log(`🛡 ${def.name} apara o golpe e revida.`);
+  if(isCounter){
+    // contra-ataque também aparado: encerra troca, volta à iniciativa
+    setBanner('parry',`<b>Aparado de novo!</b>${esc(def.name)} (${rD.total}) bloqueia o contra-ataque de ${esc(atk.name)} (${rA.total}). A troca termina.`);
+    nextRoundControls();
+  }else{
+    setBanner('parry',`<b>Aparado!</b>${esc(def.name)} (${rD.total}) bloqueia ${esc(atk.name)} (${rA.total}) e contra-ataca!`);
+    combat.attacker=defKey;
+    renderCombat();
+    setControls(`<button class="btn blood" onclick="rollAttack('${defKey}',true)">⚔ ${manualMode?'Informar':'Rolar'} contra-ataque de ${esc(def.name)}</button>`);
+  }
+}
+
+/* ---- FERIDA ---- */
+function rollWound(){
+  const defKey=combat._woundOn, byKey=combat._woundBy, def=combat[defKey];
+  if(manualMode){
+    setBanner('hit',`<b>Ferimento em ${esc(def.name)}</b>Role <b>1d6</b> para onde acerta e <b>1d6</b> para o efeito.`);
+    manualPrompt('Ferimento — onde e o quê (1d6 cada)',[
+      {key:'loc',label:'Onde acerta (1d6)',count:1},
+      {key:'eff',label:'O que faz (1d6)',count:1},
+    ], v=>finishWound(def,defKey,byKey,v.loc[0],v.eff[0],false));
+  }else{
+    finishWound(def,defKey,byKey,d6(),d6(),false);
+  }
+}
+
+function finishWound(def,defKey,byKey,loc,eff,wasReroll){
+  showDiceWound(loc,eff);
+  if(eff>=5){
+    // ferida profunda -> precisa de 1d6 de rounds de sangramento
+    if(manualMode){
+      setBanner('kill',`<b>Ferida profunda em ${esc(def.name)}!</b>Role <b>1d6</b>: em quantos rounds sangra até a morte.`);
+      manualPrompt('Sangramento — rounds até a morte (1d6)',[
+        {key:'bl',label:'Rounds até a morte (1d6)',count:1},
+      ], v=>applyWound(def,defKey,byKey,loc,eff,v.bl[0],wasReroll));
+    }else{
+      applyWound(def,defKey,byKey,loc,eff,d6(),wasReroll);
+    }
+  }else{
+    applyWound(def,defKey,byKey,loc,eff,0,wasReroll);
+  }
+}
+
+function applyWound(def,defKey,byKey,loc,eff,bleedRounds,wasReroll){
+  const locName=WOUND_LOC[loc];
+  let bannerHtml;
+  if(eff<=2){
+    def.wounds.push(`Arranhão em ${locName}`);
+    log(`🩹 Ferida em ${locName}: arranhão leve. Sem efeito.`);
+    bannerHtml=`<b>Arranhão leve</b>${esc(def.name)} é atingido em ${locName}, mas é só um arranhão.`;
+  }else if(eff<=4){
+    def.penalty+=1;
+    const fl=MAIM_FLAVOR[loc]||"é mutilado";
+    def.wounds.push(`Mutilação em ${locName} (-1)`);
+    log(`⚠ Ferida em ${locName}: <b>mutilado</b> — ${def.name} ${fl}. Agora com -${def.penalty} cumulativo.`);
+    bannerHtml=`<b>Mutilação!</b>${esc(def.name)} ${fl}. Penalidade cumulativa agora: <b>-${def.penalty}</b> em iniciativa e combate.`;
+  }else{
+    def.bleed = def.bleed==null ? bleedRounds : Math.min(def.bleed,bleedRounds);
+    def.wounds.push(`Ferida profunda em ${locName} (sangra ${bleedRounds})`);
+    log(`🩸 Ferida em ${locName}: <b>ferida profunda!</b> ${def.name} sangrará até a morte em ${bleedRounds} round(s), mas pode continuar lutando.`);
+    bannerHtml=`<b>Ferida profunda!</b>${esc(def.name)} é golpeado em ${locName} e sangra — morre em <b>${bleedRounds} round(s)</b> se não vencer antes.`;
+  }
+  renderCombat();
+  const canReroll = def.rerollWounds && !wasReroll;
+  setBanner(eff<=2?'info':eff<=4?'hit':'kill',bannerHtml);
+  let ctrl="";
+  if(canReroll){
+    ctrl+=`<button class="btn ghost" onclick="rerollWound('${defKey}','${byKey}',${loc})">↻ ${esc(def.name)} rerola o efeito da ferida</button>`;
+  }
+  nextRoundControls(ctrl);
+}
+
+function rerollWound(defKey,byKey,loc){
+  const def=combat[defKey];
+  const last=def.wounds.pop();
+  if(last && last.includes('Mutilação'))def.penalty=Math.max(0,def.penalty-1);
+  if(last && last.includes('profunda'))def.bleed=recalcBleed(def);
+  log(`↻ ${def.name} usa seu poder e rerola o efeito da ferida em ${WOUND_LOC[loc]}.`);
+  if(manualMode){
+    setBanner('hit',`<b>Rerolagem de ${esc(def.name)}</b>Role <b>1d6</b> para o novo efeito.`);
+    manualPrompt('Rerolar efeito (1d6)',[{key:'eff',label:'Novo efeito (1d6)',count:1}],
+      v=>finishWound(def,defKey,byKey,loc,v.eff[0],true));
+  }else{
+    finishWound(def,defKey,byKey,loc,d6(),true);
+  }
+}
+function recalcBleed(def){
+  // se ainda houver outra ferida profunda registrada, mantém; senão null
+  const deep=def.wounds.filter(w=>w.includes('profunda'));
+  if(deep.length===0)return null;
+  // pega o menor prazo registrado
+  let m=null;
+  deep.forEach(w=>{const mt=w.match(/sangra (\d+)/);if(mt){const v=+mt[1];m=m==null?v:Math.min(m,v);}});
+  return m;
+}
+
+/* ---- SANGRAMENTO ---- */
+function processBleed(){
+  let died=false, deadKey=null;
+  ['A','B'].forEach(k=>{
+    const f=combat[k];
+    if(f.alive && f.bleed!=null){
+      f.bleed--;
+      if(f.bleed<=0){
+        f.alive=false; died=true; deadKey=k;
+        log(`🩸 <b>${f.name} sucumbe ao sangramento</b> e cai morto.`);
+      }else{
+        log(`🩸 ${f.name} sangra... ${f.bleed} round(s) restante(s).`);
+      }
+    }
+  });
+  renderCombat();
+  if(died){
+    const winner=otherKey(deadKey);
+    setBanner('kill',`<b>☠ ${esc(combat[deadKey].name)} morre sangrando!</b>${esc(combat[winner].name)} vence o duelo.`);
+    endDuel(winner);
+    return false;
+  }
+  return true;
+}
+
+/* ---- CONTROLES DE PRÓXIMO ROUND ---- */
+function nextRoundControls(extra){
+  combat.attacker=null;
+  combat.phase='init';
+  renderCombat();
+  const e=extra||"";
+  setControls(e+`<button class="btn primary" onclick="rollInitiative()">🎲 Próximo round — Rolar Iniciativa</button>`);
+}
+
+/* ---- FIM DO DUELO ---- */
+function endDuel(winnerKey){
+  combat.phase='over';
+  const w=combat[winnerKey], l=combat[otherKey(winnerKey)];
+  // registrar duelo sobrevivido no roster + evolução a cada 2 duelos
+  const src=roster.find(x=>x.id===w.srcId);
+  let evoMsg="";
+  if(src){
+    src.duelsSurvived=(src.duelsSurvived||0)+1;
+    if(src.duelsSurvived%2===0){
+      const r=d6();const t=applyUpgrade(src,r);
+      evoMsg=`<div class="banner info"><b>⬆ ${esc(src.name)} evolui!</b>Sobreviveu a ${src.duelsSurvived} duelos. 🎲 ${r} → ${t}</div>`;
+    }
+    saveRoster();
+  }
+  setBanner('kill',`<b>⚜ Vitória de ${esc(w.name)}!</b>${esc(l.name)} jaz derrotado no campo de honra.`);
+  setControls(`${evoMsg}
+    <div class="btn-row">
+      <button class="btn gold" onclick="go('duel-setup')">⚔ Novo duelo</button>
+      <button class="btn ghost" onclick="go('home')">Menu</button>
+    </div>`);
+}
+
+/* ============================================================
+   RENDER COMBATE
+============================================================ */
+function renderCombat(){
+  document.getElementById('round-label').textContent = combat.round>0?`Round ${combat.round}`:'Preparação';
+  const el=document.getElementById('combat-fighters');
+  el.innerHTML = fighterCard('A')+`<div class="vsmid">×</div>`+fighterCard('B');
+}
+function fighterCard(k){
+  const f=combat[k];
+  const isAtk=combat.attacker===k;
+  let role='';
+  if(combat.attacker===k)role='Atacante';
+  else if(combat.attacker===otherKey(k))role='Defensor';
+  let tags='';
+  if(f.penalty>0)tags+=`<span class="tg maim">-${f.penalty} ferido</span>`;
+  if(f.bleed!=null)tags+=`<span class="tg blood">🩸 sangra ${f.bleed}</span>`;
+  if(f.rerollWounds)tags+=`<span class="tg">↻ feridas</span>`;
+  return `<div class="fighter ${isAtk?'attacker':''} ${f.alive?'':'dead'}">
+    <div class="role">${role}</div>
+    <h3>${esc(f.name)}${f.alive?'':' ☠'}</h3>
+    <div class="ministats">
+      Iniciativa <b>${fmt(f.init)}</b> · Combate <b>${fmt(f.combat)}</b>
+      ${f.penalty>0?`<br>Penalidade atual: <b>-${f.penalty}</b>`:''}
+    </div>
+    <div class="hp-tags">${tags||'<span class="tg">ileso</span>'}</div>
+  </div>`;
+}
+
+/* ============================================================
+   DADOS NA TELA
+============================================================ */
+function clearDice(){document.getElementById('dice-area').innerHTML="";}
+function pipLayout(n){
+  // posições em % para 1..6
+  const P={
+    1:[[50,50]],
+    2:[[28,28],[72,72]],
+    3:[[28,28],[50,50],[72,72]],
+    4:[[28,28],[72,28],[28,72],[72,72]],
+    5:[[28,28],[72,28],[50,50],[28,72],[72,72]],
+    6:[[28,28],[72,28],[28,50],[72,50],[28,72],[72,72]]
+  };
+  return (P[n]||[]).map(([x,y])=>`<span class="pip" style="left:calc(${x}% - 4px);top:calc(${y}% - 4px)"></span>`).join('');
+}
+function dieEl(n){return `<div class="die rolling">${pipLayout(n)}</div>`}
+
+function showDice(label,rolls){
+  // rolls: array de {a,b,sum,bonus,pen,total,name}
+  const area=document.getElementById('dice-area');
+  let html=`<div style="width:100%;text-align:center;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:6px">${label}</div>`;
+  rolls.forEach((r,i)=>{
+    html+=`<div style="text-align:center">
+      <div class="small muted" style="margin-bottom:3px">${esc(r.name)}</div>
+      <div style="display:flex;gap:6px;align-items:center;justify-content:center">
+        ${dieEl(r.a)}${dieEl(r.b)}
+        <span class="small muted">${r.bonus-r.pen!==0?(r.bonus-r.pen>=0?'+':'')+(r.bonus-r.pen):''}</span>
+        <span class="chip" style="font-size:18px"><b>${r.total}</b></span>
+      </div>
+    </div>`;
+    if(i<rolls.length-1)html+=`<div class="plus" style="align-self:center;color:var(--ink-soft)">⚔</div>`;
+  });
+  area.innerHTML=html;
+}
+function showDiceWound(loc,eff){
+  const area=document.getElementById('dice-area');
+  area.innerHTML=`
+    <div style="text-align:center">
+      <div class="small muted" style="margin-bottom:3px">Onde</div>
+      ${dieEl(loc)}
+      <div class="small" style="margin-top:4px">${WOUND_LOC[loc]}</div>
+    </div>
+    <div class="plus" style="color:var(--ink-soft)">·</div>
+    <div style="text-align:center">
+      <div class="small muted" style="margin-bottom:3px">O quê</div>
+      ${dieEl(eff)}
+      <div class="small" style="margin-top:4px">${eff<=2?'arranhão':eff<=4?'mutila':'profunda'}</div>
+    </div>`;
+}
+
+/* ============================================================
+   BANNER / CONTROLES / LOG
+============================================================ */
+function setBanner(type,html){document.getElementById('combat-banner').innerHTML=`<div class="banner ${type}">${html}</div>`;}
+function setControls(html){document.getElementById('combat-controls').innerHTML=html;}
+function log(html){
+  combat.log.push({t:'li',html});
+  renderLog();
+}
+function logRound(n){combat.log.push({t:'rnd',html:`Round ${n}`});renderLog();}
+function renderLog(){
+  const el=document.getElementById('combat-log');
+  el.innerHTML=combat.log.map(e=>e.t==='rnd'?`<div class="rnd">— ${e.html} —</div>`:`<div class="li">${e.html}</div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+/* ============================================================
+   UTIL
+============================================================ */
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* init */
+go('home');
+</script>
+</body>
+</html>
