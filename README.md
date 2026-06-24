@@ -2,7 +2,7 @@
 
 App de mesa para jogar **2d6 Duels**, jogo de duelo com 2d6 criado por **Tito B.A.** — *"A deadly sport for a more civilized age"*.
 
-🎮 **Jogar agora:** https://USUARIO.github.io/2d6-duels/ *(link atualizado após publicação)*
+🎮 **Jogar agora:** https://kordep.github.io/2d6-duels/
 
 ## O que é
 
