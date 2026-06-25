@@ -1,6 +1,6 @@
 import base64, os
 SRC="index.src.html"; OUT="index.html"
-mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg'}
+mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.woff2':'font/woff2'}
 tokens={
  '__TEXTURE__':'assets/texture.jpg',
  '__COVER__':'assets/cover.png',
@@ -11,6 +11,7 @@ tokens={
  '__FANATIC__':'assets/fanatic.png',
  '__COCKS__':'assets/cocks.png',
  '__WARRIOR__':'assets/warrior.png',
+ '__FONT_FELL__':'assets/imfell-english-sc.woff2',
 }
 def datauri(path):
     ext=os.path.splitext(path)[1].lower()
