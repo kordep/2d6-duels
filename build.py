@@ -9,6 +9,8 @@ tokens={
  '__FENCERS__':'assets/fencers.png',
  '__DUO__':'assets/duo.png',
  '__FANATIC__':'assets/fanatic.png',
+ '__COCKS__':'assets/cocks.png',
+ '__WARRIOR__':'assets/warrior.png',
 }
 def datauri(path):
     ext=os.path.splitext(path)[1].lower()
