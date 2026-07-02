@@ -240,6 +240,10 @@
         <span data-i18n="mDuel">⚔ Duelar</span>
         <span class="sub" data-i18n="mDuelSub">Escolha dois duelistas e lute</span>
       </button>
+      <button class="btn menu-btn" onclick="openJourney()">
+        <span data-i18n="mJourney">🗺 Jornada</span>
+        <span class="sub" data-i18n="mJourneySub">Carreira solo: duele por ouro e glória</span>
+      </button>
       <button class="btn menu-btn" onclick="go('roster')">
         <span data-i18n="mForge">🪶 Forja de Duelistas</span>
         <span class="sub" data-i18n="mForgeSub">Gerar, ver e evoluir combatentes</span>
@@ -325,6 +329,51 @@
     </div>
   </section>
 
+  <!-- ============ JOURNEY START ============ -->
+  <section id="screen-journey-start" class="hide">
+    <button class="back" onclick="go('home')" data-i18n="backMenu">‹ Menu</button>
+    <h2 class="section" data-i18n="jTitle">Jornada</h2>
+    <div class="frame">
+      <img class="woodcut art-inline" src="__HATS__" alt="">
+      <p class="small muted center" data-i18n="jIntro">Forje um duelista e tente se tornar o campeão da cidade. Feridas custam ouro. A morte é permanente.</p>
+      <label class="fld" data-i18n="lblName">Nome</label>
+      <input type="text" id="jname" data-i18n-ph="phName" placeholder="Ex.: Dom Esgrimício de Valverde" maxlength="40">
+      <button class="btn ghost sm" style="margin-top:8px;width:auto" onclick="randomHeroName()" data-i18n="btnRandomName">🎲 Nome aleatório</button>
+      <hr class="divider">
+      <div id="jgen-result"></div>
+      <button class="btn primary" id="jgen-roll-btn" onclick="rollHero()" data-i18n="btnRollHero">🎲 Rolar duelista</button>
+      <div id="jgen-save" class="hide" style="margin-top:12px">
+        <button class="btn gold" onclick="beginJourney()" data-i18n="btnBeginJourney">⚔ Começar a jornada</button>
+        <button class="btn ghost sm" style="margin-top:8px;width:100%" onclick="rollHero()" data-i18n="btnRerollAll">↻ Rolar tudo de novo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CITY ============ -->
+  <section id="screen-city" class="hide">
+    <button class="back" onclick="go('home')" data-i18n="backMenu">‹ Menu</button>
+    <h2 class="section" id="city-title">Vilaverde</h2>
+    <div id="city-status"></div>
+    <div id="city-event"></div>
+    <div class="btn-row" id="city-actions" style="flex-wrap:wrap;margin:10px 0"></div>
+    <div id="city-panel"></div>
+  </section>
+
+  <!-- ============ JOURNEY END ============ -->
+  <section id="screen-journey-end" class="hide">
+    <h2 class="section" data-i18n="jEndTitle">Fim da Jornada</h2>
+    <img class="woodcut art-sm" src="__COVER__" alt="">
+    <div class="frame">
+      <div class="center" id="jend-summary"></div>
+      <button class="btn gold" style="margin-top:14px" onclick="openJourney()" data-i18n="btnNewJourney">🪶 Nova jornada</button>
+      <button class="btn ghost sm" style="margin-top:8px;width:100%" onclick="go('home')" data-i18n="btnMenu">Menu</button>
+    </div>
+    <div class="log" style="margin-top:14px">
+      <h4 data-i18n="jGraveTitle">Cemitério dos Duelistas</h4>
+      <div class="log-list" id="graveyard-list"></div>
+    </div>
+  </section>
+
   <!-- ============ RULES ============ -->
   <section id="screen-rules" class="hide">
     <button class="back" onclick="go('home')" data-i18n="backMenu">‹ Menu</button>
@@ -365,7 +414,7 @@ const I18N = {
     STYLE:{1:"Rápido e indolor — mira nos pontos vitais sempre que possível",2:"Sádico — só você iria atrás de um golpe na virilha!",3:"Atlético — pendurado no lustre",4:"Sujo — morde a orelha e enfia o dedo no olho",5:"Metódico — conforme os melhores manuais",6:"Heroico — posso fazer isso o dia todo!"},
     WOUND_LOC:{1:"a Cabeça",2:"o Braço Direito",3:"o Braço Esquerdo",4:"o Torso",5:"a Perna Esquerda",6:"a Perna Direita"},
     MAIM_FLAVOR:{1:"é cegado — não enxerga direito",2:"larga a arma da mão direita",3:"larga a arma da mão esquerda",4:"tem as costelas estilhaçadas",5:"tem o joelho esquerdo despedaçado",6:"tem o joelho direito despedaçado"},
-    woundShort:{scratch:"arranhão",maim:"mutila",deep:"profunda"},
+    woundShort:{scratch:"arranhão",maim:"mutila",deep:"profunda",grave:"grave",fatal:"fatal"},
     NAMES_A:["Dom","Sir","Lorde","Mestre","Barão","Visconde","Capitão","O Velho","Madame","Dama"],
     NAMES_B:["Esgrimício","Reginaldo","Bartolomeu","Anselmo","Gualter","Inácio","Teobaldo","Vitória","Constança","Brunilda","Heitor","Aurélio"],
     NAMES_C:["de Valverde","das Sombras","Punho-de-Ferro","o Implacável","da Cruz","Sangue-Frio","de Aragão","Lâmina-Rápida","o Pomposo","de Montecervo","Mão-Esquerda","o Insolente"],
@@ -394,7 +443,7 @@ const I18N = {
     rCombatH:"Combate",
     rCombatBody:'<p style="margin:0 0 6px">O atacante rola <b>2d6 + combate</b> contra a mesma rolagem do defensor:</p><ul style="margin:0;padding-left:18px"><li><b>Atacante &gt; 2× defensor:</b> o defensor <b style="color:var(--blood)">morre</b> na hora.</li><li><b>Atacante &gt; defensor:</b> acerto → tabela de Feridas. Rola iniciativa de novo se o alvo sobreviver.</li><li><b>Atacante ≤ defensor:</b> golpe <b style="color:var(--green)">aparado</b> → o defensor contra-ataca. Depois rola iniciativa de novo.</li></ul>',
     rWoundH:"Feridas",
-    rWoundBody:'<p style="margin:0 0 6px"><i>Onde acerta (1d6):</i> 1 Cabeça · 2 Braço Dir. · 3 Braço Esq. · 4 Torso · 5 Perna Esq. · 6 Perna Dir.</p><p style="margin:0 0 4px"><i>O que faz (1d6):</i></p><ul style="margin:0;padding-left:18px"><li><b>1-2:</b> arranhão leve.</li><li><b>3-4:</b> local mutilado — pode largar arma, ser cegado etc. <b>-1 cumulativo</b> em iniciativa e combate.</li><li><b>5-6:</b> ferida profunda — sangra até a morte em <b>1d6 rounds</b>, mas pode continuar lutando.</li></ul>',
+    rWoundBody:'<p style="margin:0 0 6px"><i>Onde acerta (1d6):</i> 1 Cabeça · 2 Braço Dir. · 3 Braço Esq. · 4 Torso · 5 Perna Esq. · 6 Perna Dir.</p><p style="margin:0 0 4px"><i>O que faz (2d6):</i></p><ul style="margin:0;padding-left:18px"><li><b>2-4:</b> arranhão leve.</li><li><b>5-7:</b> local mutilado — pode largar arma, ser cegado etc. <b>-1 cumulativo</b> em iniciativa e combate.</li><li><b>8-9:</b> ferida profunda — sangra até a morte em <b>1d6 rounds</b>, mas pode continuar lutando.</li><li><b>10-11:</b> ferida grave — <b>-2 cumulativo</b> <i>e</i> sangra (1d6 rounds).</li><li><b>12:</b> golpe devastador — <b style="color:var(--blood)">morte</b>.</li></ul>',
     rEvoH:"Evolução",
     rEvoBody:'Role 1d6 na criação e a cada dois duelos sobrevividos: <b>1-2</b> +1 iniciativa · <b>3-4</b> +1 combate · <b>5-6</b> ganha o poder de rerolar efeitos de ferida.',
     footerRules:"2d6 Duels — by Tito B.A.",
@@ -445,8 +494,8 @@ const I18N = {
     parryBanner:(def,dt,atk,at)=>`<b>Aparado!</b>${def} (${dt}) bloqueia ${atk} (${at}) e contra-ataca!`,
     btnCounter:(n,m)=>`⚔ ${m?'Informar':'Rolar'} contra-ataque de ${n}`,
     woundBannerManual:n=>`<b>Ferimento em ${n}</b>Role <b>1d6</b> para onde acerta e <b>1d6</b> para o efeito.`,
-    manualWoundTitle:"Ferimento — onde e o quê (1d6 cada)",
-    lblWhere:"Onde acerta (1d6)", lblWhat:"O que faz (1d6)",
+    manualWoundTitle:"Ferimento — onde (1d6) e o quê (2d6)",
+    lblWhere:"Onde acerta (1d6)", lblWhat:"O que faz (2d6)",
     deepBannerManual:n=>`<b>Ferida profunda em ${n}!</b>Role <b>1d6</b>: em quantos rounds sangra até a morte.`,
     manualBleedTitle:"Sangramento — rounds até a morte (1d6)", lblBleed:"Rounds até a morte (1d6)",
     scratchLog:loc=>`🩹 Ferida em ${loc}: arranhão leve. Sem efeito.`,
@@ -458,7 +507,7 @@ const I18N = {
     btnRerollWound:n=>`↻ ${n} rerola o efeito da ferida`,
     rerollLog:(n,loc)=>`↻ ${n} usa seu poder e rerola o efeito da ferida em ${loc}.`,
     rerollBanner:n=>`<b>Rerolagem de ${n}</b>Role <b>1d6</b> para o novo efeito.`,
-    manualRerollTitle:"Rerolar efeito (1d6)", lblNewEffect:"Novo efeito (1d6)",
+    manualRerollTitle:"Rerolar efeito (2d6)", lblNewEffect:"Novo efeito (2d6)",
     bleedDeathLog:n=>`🩸 <b>${n} sucumbe ao sangramento</b> e cai morto.`,
     bleedTickLog:(n,l)=>`🩸 ${n} sangra... ${l} round(s) restante(s).`,
     bleedDeathBanner:(d,w)=>`<b>☠ ${d} morre sangrando!</b>${w} vence o duelo.`,
@@ -466,7 +515,84 @@ const I18N = {
     evolveDuelMsg:(n,dl,r,t)=>`<div class="banner info"><b>⬆ ${n} evolui!</b>Sobreviveu a ${dl} duelos. 🎲 ${r} → ${t}</div>`,
     victoryBanner:(w,l)=>`<b>⚜ Vitória de ${w}!</b>${l} jaz derrotado no campo de honra.`,
     tagWounded:p=>`-${p} ferido`, tagBleed:b=>`🩸 sangra ${b}`,
-    penaltyNow:p=>`Penalidade atual: <b>-${p}</b>`
+    penaltyNow:p=>`Penalidade atual: <b>-${p}</b>`,
+
+    /* — feridas 2d6 (novos efeitos) — */
+    graveLog:(loc,n,r,pen)=>`☠ Ferida em ${loc}: <b>ferida grave!</b> ${n} fica com -${pen} cumulativo e sangra — morre em ${r} round(s).`,
+    graveBanner:(n,loc,r,pen)=>`<b>Ferida grave!</b>${n} é destroçado em ${loc}: <b>-${pen}</b> cumulativo <i>e</i> sangrando — morre em <b>${r} round(s)</b> se não vencer antes.`,
+    fatalLog:(loc,n)=>`💀 Ferida em ${loc}: <b>golpe devastador!</b> ${n} tomba morto.`,
+    fatalBanner:(n,loc)=>`<b>☠ Golpe devastador!</b>O aço encontra ${loc} de ${n}. Não há o que fazer.`,
+    fatalRerollBanner:(n,loc)=>`<b>☠ Golpe devastador em ${loc}!</b>${n} pode usar seu poder e rerolar o efeito — ou aceitar a morte.`,
+    btnAcceptFate:n=>`☠ ${n} aceita o destino`,
+
+    /* — Jornada — */
+    mJourney:"🗺 Jornada", mJourneySub:"Carreira solo: duele por ouro e glória",
+    jTitle:"Jornada",
+    jIntro:"Forje um duelista e tente se tornar o campeão da cidade. Feridas custam ouro. A morte é permanente.",
+    btnRollHero:"🎲 Rolar duelista", btnBeginJourney:"⚔ Começar a jornada",
+    cityName:"Vilaverde",
+    jDay:d=>`Dia ${d}`, jGoldLbl:"ouro",
+    jWins:w=>`⚔ ${w} vitória(s)`,
+    jTraumaTag:t=>`😱 ${t} trauma(s) · -${t} iniciativa`,
+    jBleedTag:b=>`🩸 sangrando — morre em ${b} round(s) de duelo se não estancar!`,
+    jBlessTag:m=>`✨ abençoado: +${m} no próximo duelo`,
+    jMarkTag:m=>`🌫 marcado: ${m} no próximo duelo`,
+    jBoostTag:"💰 bolsa dobrada no próximo duelo",
+    jBroker:"🤝 Agenciador", jHealer:"🩹 Curandeiro", jChurch:"⛪ Igreja", jCult:"🌙 Culto", jTavern:"🍺 Taverna",
+    jBrokerIntro:"“Tenho três contratos hoje. Escolha com quem cruzar o aço.”",
+    jTierName:{0:"Brigão de taverna",2:"Veterano",4:"O Matador"},
+    jPurse:p=>`Bolsa: 🪙 ${p}`,
+    btnFight:"⚔ Duelar",
+    jChampionTag:"👑 campeão da cidade",
+    jHealerIntro:"“Deixe-me ver essas feridas…”",
+    btnStaunch:c=>`🩸 Estancar sangramento (🪙 ${c})`,
+    btnHealMaim:c=>`⚕ Tratar mutilação, cura -1 (🪙 ${c})`,
+    jHealthy:"Você está inteiro. O curandeiro boceja.",
+    jNoGold:"Ouro insuficiente.",
+    jChurchIntro:"“A alma também sangra, filho. Doe e reze.”",
+    btnPray:c=>`🙏 Doar e rezar — remove 1 trauma (🪙 ${c})`,
+    jNoTrauma:"Sua alma está em paz.",
+    jCultIntro:"“Os antigos cobram barato… às vezes.”",
+    btnRite:"🌙 Participar do rito (grátis, 1× por dia)",
+    jCultUsed:"Os antigos já falaram hoje. Volte amanhã.",
+    jCultGood:r=>`Os espíritos sorriem (🎲 ${r}): seus traumas se dissolvem na fumaça e você sai <b>abençoado</b> (+1 no próximo duelo).`,
+    jCultBad:r=>`O rito falha (🎲 ${r}). Você sai <b>marcado</b> (-1 no próximo duelo).`,
+    jTavernIntro:"Uma caneca, uma cama e as fofocas da vila.",
+    btnRest:"🍺 Descansar até amanhã (🪙 1)",
+    jWinPurse:(p,g)=>`🪙 Você embolsa <b>${p}</b> de ouro (total: ${g}).`,
+    jTraumaGain:(n,t)=>`😱 A quase-morte deixa marcas: +${n} trauma (total: ${t}).`,
+    jChampionMsg:"👑 <b>Você derrotou o Matador — é o novo campeão de Vilaverde!</b> O circuito das outras cidades chega em breve; por ora, siga duelando.",
+    btnBackCity:"🏰 Voltar à cidade",
+    btnSeeEnd:"☠ Ver o fim",
+    confirmFlee:"Fugir do duelo? Você não leva bolsa e a vergonha deixa 1 trauma.",
+    jFledEvent:"🏃 Você fugiu do duelo. A vergonha pesa: +1 trauma.",
+    jEndTitle:"Fim da Jornada", jGraveTitle:"Cemitério dos Duelistas",
+    jEndSummary:(n,d,w,g,c)=>`<span style="font-size:20px"><b>${n}</b></span><br>morto no dia ${d} — ${w} vitória(s), 🪙 ${g}<br><i>${c}</i>`,
+    btnNewJourney:"🪶 Nova jornada",
+    jCauseDuel:o=>`morto em duelo por ${o}`,
+    jCauseQuit:"abandonou a estrada dos duelos",
+    jGraveLine:(n,d,w,c)=>`🪦 <b>${n}</b> — dia ${d}, ${w} vitória(s) — ${c}`,
+    jGraveEmpty:"Nenhum duelista enterrado ainda.",
+    btnAbandon:"🪦 Abandonar jornada",
+    confirmAbandon:"Abandonar esta jornada para sempre? O duelista se aposenta e a run termina.",
+    jEventTitle:"Acontecimentos",
+    jEvent:{
+      2:l=>`🎲 2 — Bateram sua carteira na noite: você perde 🪙 ${l}.`,
+      3:()=>`🎲 3 — Bebida envenenada por um rival: <b>-1 no próximo duelo</b>.`,
+      4:()=>`🎲 4 — Comeu carne estragada na estalagem: <b>-1 no próximo duelo</b>.`,
+      10:g=>`🎲 10 — Ganhou nos dados na taverna: +🪙 ${g}.`,
+      "11h":()=>`🎲 11 — Um admirador paga um bom médico: <b>uma mutilação tratada de graça</b>.`,
+      "11g":()=>`🎲 11 — Um admirador paga suas bebidas: +🪙 2.`,
+      12:()=>`🎲 12 — Um patrono misterioso se interessa por você: <b>a bolsa do próximo duelo será dobrada</b>.`
+    },
+    jRumors:[
+      "Na taverna, dizem que o Matador nunca foi tocado por uma lâmina.",
+      "Um bêbado jura que viu luzes no bosque à meia-noite.",
+      "O ferreiro reclama que ninguém mais duela como antigamente.",
+      "Dizem que quem foge de um duelo nunca mais dorme direito.",
+      "A filha do estalajadeiro colecionava penas de chapéu de duelistas mortos."
+    ],
+    jRumorPrefix:"🎲 Dia tranquilo. ",
   },
 
   en:{
@@ -475,7 +601,7 @@ const I18N = {
     STYLE:{1:"Quick and painless — target the vitals whenever possible",2:"Sadistic — only you would go for a groin shot!",3:"Athletic — hanging from the chandelier",4:"Dirty — bite their ear and finger the eye",5:"Methodical — according to the best manuals",6:"Heroic — I can do this all day!"},
     WOUND_LOC:{1:"the Head",2:"the Right Arm",3:"the Left Arm",4:"the Torso",5:"the Left Leg",6:"the Right Leg"},
     MAIM_FLAVOR:{1:"is blinded — can't see straight",2:"drops the weapon from the right hand",3:"drops the weapon from the left hand",4:"has their ribs shattered",5:"has their left knee smashed",6:"has their right knee smashed"},
-    woundShort:{scratch:"scratch",maim:"maims",deep:"deep"},
+    woundShort:{scratch:"scratch",maim:"maims",deep:"deep",grave:"grievous",fatal:"fatal"},
     NAMES_A:["Sir","Lord","Master","Baron","Viscount","Captain","Old","Madam","Dame","Don"],
     NAMES_B:["Reginald","Bartholomew","Anselm","Walter","Ignatius","Theobald","Victoria","Constance","Brunhild","Hector","Aurelius","Percival"],
     NAMES_C:["of Valverde","of the Shadows","Iron-Fist","the Relentless","of the Cross","Cold-Blood","of Aragon","Quick-Blade","the Pompous","of Montecervo","Left-Hand","the Insolent"],
@@ -504,7 +630,7 @@ const I18N = {
     rCombatH:"Combat",
     rCombatBody:'<p style="margin:0 0 6px">The attacker rolls <b>2d6 + combat</b> against the defender\'s same roll:</p><ul style="margin:0;padding-left:18px"><li><b>Attacker &gt; 2× defender:</b> the defender <b style="color:var(--blood)">dies</b> instantly.</li><li><b>Attacker &gt; defender:</b> a hit → Wounds table. Roll initiative again if the target survives.</li><li><b>Attacker ≤ defender:</b> the blow is <b style="color:var(--green)">parried</b> → the defender counter-attacks. Then roll initiative again.</li></ul>',
     rWoundH:"Wounds",
-    rWoundBody:'<p style="margin:0 0 6px"><i>Where it lands (1d6):</i> 1 Head · 2 Right Arm · 3 Left Arm · 4 Torso · 5 Left Leg · 6 Right Leg.</p><p style="margin:0 0 4px"><i>What it does (1d6):</i></p><ul style="margin:0;padding-left:18px"><li><b>1-2:</b> light scratch.</li><li><b>3-4:</b> location maimed — may drop a weapon, be blinded, etc. <b>-1 cumulative</b> on initiative and combat.</li><li><b>5-6:</b> deep wound — bleeds to death in <b>1d6 rounds</b>, but can keep fighting.</li></ul>',
+    rWoundBody:'<p style="margin:0 0 6px"><i>Where it lands (1d6):</i> 1 Head · 2 Right Arm · 3 Left Arm · 4 Torso · 5 Left Leg · 6 Right Leg.</p><p style="margin:0 0 4px"><i>What it does (2d6):</i></p><ul style="margin:0;padding-left:18px"><li><b>2-4:</b> light scratch.</li><li><b>5-7:</b> location maimed — may drop a weapon, be blinded, etc. <b>-1 cumulative</b> on initiative and combat.</li><li><b>8-9:</b> deep wound — bleeds to death in <b>1d6 rounds</b>, but can keep fighting.</li><li><b>10-11:</b> grievous wound — <b>-2 cumulative</b> <i>and</i> bleeding (1d6 rounds).</li><li><b>12:</b> devastating blow — <b style="color:var(--blood)">death</b>.</li></ul>',
     rEvoH:"Evolution",
     rEvoBody:'Roll 1d6 at creation and every two duels survived: <b>1-2</b> +1 initiative · <b>3-4</b> +1 combat · <b>5-6</b> gain the power to reroll wound effects.',
     footerRules:"2d6 Duels — by Tito B.A.",
@@ -555,8 +681,8 @@ const I18N = {
     parryBanner:(def,dt,atk,at)=>`<b>Parried!</b>${def} (${dt}) blocks ${atk} (${at}) and counters!`,
     btnCounter:(n,m)=>`⚔ ${m?'Enter':'Roll'} ${n}'s counter`,
     woundBannerManual:n=>`<b>Wound on ${n}</b>Roll <b>1d6</b> for where it lands and <b>1d6</b> for the effect.`,
-    manualWoundTitle:"Wound — where and what (1d6 each)",
-    lblWhere:"Where it lands (1d6)", lblWhat:"What it does (1d6)",
+    manualWoundTitle:"Wound — where (1d6) and what (2d6)",
+    lblWhere:"Where it lands (1d6)", lblWhat:"What it does (2d6)",
     deepBannerManual:n=>`<b>Deep wound on ${n}!</b>Roll <b>1d6</b>: how many rounds until they bleed out.`,
     manualBleedTitle:"Bleeding — rounds until death (1d6)", lblBleed:"Rounds until death (1d6)",
     scratchLog:loc=>`🩹 Wound on ${loc}: light scratch. No effect.`,
@@ -568,7 +694,7 @@ const I18N = {
     btnRerollWound:n=>`↻ ${n} rerolls the wound effect`,
     rerollLog:(n,loc)=>`↻ ${n} uses their power and rerolls the wound effect on ${loc}.`,
     rerollBanner:n=>`<b>${n}'s reroll</b>Roll <b>1d6</b> for the new effect.`,
-    manualRerollTitle:"Reroll effect (1d6)", lblNewEffect:"New effect (1d6)",
+    manualRerollTitle:"Reroll effect (2d6)", lblNewEffect:"New effect (2d6)",
     bleedDeathLog:n=>`🩸 <b>${n} succumbs to bleeding</b> and falls dead.`,
     bleedTickLog:(n,l)=>`🩸 ${n} bleeds... ${l} round(s) left.`,
     bleedDeathBanner:(d,w)=>`<b>☠ ${d} bleeds out!</b>${w} wins the duel.`,
@@ -576,7 +702,84 @@ const I18N = {
     evolveDuelMsg:(n,dl,r,t)=>`<div class="banner info"><b>⬆ ${n} evolves!</b>Survived ${dl} duels. 🎲 ${r} → ${t}</div>`,
     victoryBanner:(w,l)=>`<b>⚜ ${w} is victorious!</b>${l} lies defeated on the field of honor.`,
     tagWounded:p=>`-${p} wounded`, tagBleed:b=>`🩸 bleeding ${b}`,
-    penaltyNow:p=>`Current penalty: <b>-${p}</b>`
+    penaltyNow:p=>`Current penalty: <b>-${p}</b>`,
+
+    /* — 2d6 wounds (new effects) — */
+    graveLog:(loc,n,r,pen)=>`☠ Wound on ${loc}: <b>grievous wound!</b> ${n} is at -${pen} cumulative and bleeding — dies in ${r} round(s).`,
+    graveBanner:(n,loc,r,pen)=>`<b>Grievous wound!</b>${n} is mangled on ${loc}: <b>-${pen}</b> cumulative <i>and</i> bleeding — dies in <b>${r} round(s)</b> unless they win first.`,
+    fatalLog:(loc,n)=>`💀 Wound on ${loc}: <b>devastating blow!</b> ${n} falls dead.`,
+    fatalBanner:(n,loc)=>`<b>☠ Devastating blow!</b>The steel finds ${n}'s ${loc}. Nothing can be done.`,
+    fatalRerollBanner:(n,loc)=>`<b>☠ Devastating blow to ${loc}!</b>${n} may use their power to reroll the effect — or accept death.`,
+    btnAcceptFate:n=>`☠ ${n} accepts their fate`,
+
+    /* — Journey — */
+    mJourney:"🗺 Journey", mJourneySub:"Solo career: duel for gold and glory",
+    jTitle:"Journey",
+    jIntro:"Forge a duelist and try to become the city champion. Wounds cost gold. Death is permanent.",
+    btnRollHero:"🎲 Roll duelist", btnBeginJourney:"⚔ Begin the journey",
+    cityName:"Greenvale",
+    jDay:d=>`Day ${d}`, jGoldLbl:"gold",
+    jWins:w=>`⚔ ${w} win(s)`,
+    jTraumaTag:t=>`😱 ${t} trauma(s) · -${t} initiative`,
+    jBleedTag:b=>`🩸 bleeding — dies in ${b} duel round(s) unless staunched!`,
+    jBlessTag:m=>`✨ blessed: +${m} next duel`,
+    jMarkTag:m=>`🌫 marked: ${m} next duel`,
+    jBoostTag:"💰 next duel purse doubled",
+    jBroker:"🤝 Broker", jHealer:"🩹 Healer", jChurch:"⛪ Church", jCult:"🌙 Cult", jTavern:"🍺 Tavern",
+    jBrokerIntro:"“I hold three contracts today. Choose whom to cross steel with.”",
+    jTierName:{0:"Tavern brawler",2:"Veteran",4:"The Killer"},
+    jPurse:p=>`Purse: 🪙 ${p}`,
+    btnFight:"⚔ Duel",
+    jChampionTag:"👑 city champion",
+    jHealerIntro:"“Let me see those wounds…”",
+    btnStaunch:c=>`🩸 Staunch the bleeding (🪙 ${c})`,
+    btnHealMaim:c=>`⚕ Treat a maim, heals -1 (🪙 ${c})`,
+    jHealthy:"You are whole. The healer yawns.",
+    jNoGold:"Not enough gold.",
+    jChurchIntro:"“The soul bleeds too, child. Donate and pray.”",
+    btnPray:c=>`🙏 Donate and pray — removes 1 trauma (🪙 ${c})`,
+    jNoTrauma:"Your soul is at peace.",
+    jCultIntro:"“The old ones charge little… sometimes.”",
+    btnRite:"🌙 Join the rite (free, once a day)",
+    jCultUsed:"The old ones have spoken today. Return tomorrow.",
+    jCultGood:r=>`The spirits smile (🎲 ${r}): your traumas dissolve in the smoke and you leave <b>blessed</b> (+1 next duel).`,
+    jCultBad:r=>`The rite fails (🎲 ${r}). You leave <b>marked</b> (-1 next duel).`,
+    jTavernIntro:"A mug, a bed, and the village gossip.",
+    btnRest:"🍺 Rest until tomorrow (🪙 1)",
+    jWinPurse:(p,g)=>`🪙 You pocket <b>${p}</b> gold (total: ${g}).`,
+    jTraumaGain:(n,t)=>`😱 The brush with death leaves marks: +${n} trauma (total: ${t}).`,
+    jChampionMsg:"👑 <b>You defeated the Killer — you are the new champion of Greenvale!</b> The circuit of other cities is coming soon; for now, keep dueling.",
+    btnBackCity:"🏰 Back to the city",
+    btnSeeEnd:"☠ See the end",
+    confirmFlee:"Flee the duel? You take no purse and the shame leaves 1 trauma.",
+    jFledEvent:"🏃 You fled the duel. The shame weighs on you: +1 trauma.",
+    jEndTitle:"Journey's End", jGraveTitle:"Duelists' Graveyard",
+    jEndSummary:(n,d,w,g,c)=>`<span style="font-size:20px"><b>${n}</b></span><br>dead on day ${d} — ${w} win(s), 🪙 ${g}<br><i>${c}</i>`,
+    btnNewJourney:"🪶 New journey",
+    jCauseDuel:o=>`slain in a duel by ${o}`,
+    jCauseQuit:"left the dueling road behind",
+    jGraveLine:(n,d,w,c)=>`🪦 <b>${n}</b> — day ${d}, ${w} win(s) — ${c}`,
+    jGraveEmpty:"No duelist buried yet.",
+    btnAbandon:"🪦 Abandon journey",
+    confirmAbandon:"Abandon this journey forever? The duelist retires and the run ends.",
+    jEventTitle:"Happenings",
+    jEvent:{
+      2:l=>`🎲 2 — Your purse was cut in the night: you lose 🪙 ${l}.`,
+      3:()=>`🎲 3 — A rival poisoned your drink: <b>-1 next duel</b>.`,
+      4:()=>`🎲 4 — Spoiled meat at the inn: <b>-1 next duel</b>.`,
+      10:g=>`🎲 10 — You won at dice in the tavern: +🪙 ${g}.`,
+      "11h":()=>`🎲 11 — An admirer pays for a fine doctor: <b>one maim treated for free</b>.`,
+      "11g":()=>`🎲 11 — An admirer buys your drinks: +🪙 2.`,
+      12:()=>`🎲 12 — A mysterious patron takes an interest: <b>your next duel's purse will be doubled</b>.`
+    },
+    jRumors:[
+      "At the tavern they say the Killer has never been touched by a blade.",
+      "A drunkard swears he saw lights in the woods at midnight.",
+      "The blacksmith complains nobody duels like they used to.",
+      "They say whoever flees a duel never sleeps well again.",
+      "The innkeeper's daughter collected hat feathers from dead duelists."
+    ],
+    jRumorPrefix:"🎲 A quiet day. ",
   }
 };
 
@@ -646,6 +849,9 @@ function setLang(l){
   if(!isHidden('screen-duel-setup'))renderPickList();
   if(!isHidden('screen-generator')&&pending)renderGenResult();
   if(combat&&!isHidden('screen-combat'))renderCombat();
+  if(journey&&!isHidden('screen-city'))renderCity();
+  if(!isHidden('screen-journey-start')&&heroGen)renderHeroGen();
+  if(!isHidden('screen-journey-end'))renderGraveyard();
 }
 function isHidden(id){return document.getElementById(id).classList.contains('hide');}
 
@@ -671,6 +877,7 @@ function go(name){
   if(name==='home')updateModeUI();
   if(name==='roster')renderRoster();
   if(name==='duel-setup'){pick=[];renderPickList();}
+  if(name==='city')renderCity();
 }
 
 /* ============================================================
@@ -825,7 +1032,19 @@ function mkFighter(src){
     penalty:0, bleed:null, wounds:[], alive:true, srcId:src.id
   };
 }
-function confirmEnd(){ if(confirm(L().confirmEnd))go('home'); }
+function confirmEnd(){
+  if(combat && combat.journey){
+    if(combat.phase==='over'){ go('city'); return; }
+    if(!confirm(L().confirmFlee))return;
+    syncHeroFromFighter();
+    journey.hero.traumas++;
+    journey.nextMod=0;
+    newDay(L().jFledEvent);
+    go('city');
+    return;
+  }
+  if(confirm(L().confirmEnd))go('home');
+}
 
 function startDuel(){
   const a=roster.find(x=>x.id===pick[0]),b=roster.find(x=>x.id===pick[1]);
@@ -907,8 +1126,8 @@ function askInitiative(){
 }
 function finishInitiative(rawA,rawB){
   const A=combat.A, B=combat.B;
-  const rA=withMods(rawA,A.init,A.penalty,A.name);
-  const rB=withMods(rawB,B.init,B.penalty,B.name);
+  const rA=withMods(rawA,A.init+(A.tempMod||0),A.penalty+(A.initPen||0),A.name);
+  const rB=withMods(rawB,B.init+(B.tempMod||0),B.penalty+(B.initPen||0),B.name);
   showDice(L().initiative,[rA,rB]);
   if(rA.total===rB.total){
     log(L().initTieLog(rA.total));
@@ -944,8 +1163,8 @@ function finishAttack(attackerKey,isCounter,rawA,rawD){
   const defKey=otherKey(attackerKey);
   const atk=combat[attackerKey], def=combat[defKey];
   const word=isCounter?L().counterWord:L().attackWord;
-  const rA=withMods(rawA,atk.combat,atk.penalty,atk.name);
-  const rD=withMods(rawD,def.combat,def.penalty,def.name);
+  const rA=withMods(rawA,atk.combat+(atk.tempMod||0),atk.penalty,atk.name);
+  const rD=withMods(rawD,def.combat+(def.tempMod||0),def.penalty,def.name);
   const left=attackerKey==='A'?rA:rD, right=attackerKey==='A'?rD:rA;
   showDice(word,[left,right]);
   log(L().attackLog(word,atk.name,rA.total,def.name,rD.total));
@@ -984,15 +1203,16 @@ function rollWound(){
     setBanner('hit',L().woundBannerManual(esc(def.name)));
     manualPrompt(L().manualWoundTitle,[
       {key:'loc',label:L().lblWhere,count:1},
-      {key:'eff',label:L().lblWhat,count:1},
-    ], v=>finishWound(def,defKey,byKey,v.loc[0],v.eff[0],false));
+      {key:'eff',label:L().lblWhat,count:2},
+    ], v=>finishWound(def,defKey,byKey,v.loc[0],v.eff,false));
   }else{
-    finishWound(def,defKey,byKey,d6(),d6(),false);
+    finishWound(def,defKey,byKey,d6(),[d6(),d6()],false);
   }
 }
-function finishWound(def,defKey,byKey,loc,eff,wasReroll){
-  showDiceWound(loc,eff);
-  if(eff>=5){
+function finishWound(def,defKey,byKey,loc,effDice,wasReroll){
+  const eff=effDice[0]+effDice[1];
+  showDiceWound(loc,effDice);
+  if(eff>=8&&eff<=11){
     if(manualMode){
       setBanner('kill',L().deepBannerManual(esc(def.name)));
       manualPrompt(L().manualBleedTitle,[{key:'bl',label:L().lblBleed,count:1}],
@@ -1006,54 +1226,86 @@ function finishWound(def,defKey,byKey,loc,eff,wasReroll){
 }
 function applyWound(def,defKey,byKey,loc,eff,bleedRounds,wasReroll){
   const D=L(), locName=D.WOUND_LOC[loc];
-  let bannerHtml, type;
-  if(eff<=2){
-    type='scratch';
+  const canReroll = def.rerollWounds && !wasReroll;
+  let bannerHtml, type, btype;
+  if(eff<=4){
+    type='scratch'; btype='info';
     def.wounds.push({type,loc});
     log(D.scratchLog(locName));
     bannerHtml=D.scratchBanner(esc(def.name),locName);
-  }else if(eff<=4){
-    type='maim';
+  }else if(eff<=7){
+    type='maim'; btype='hit';
     def.penalty+=1;
     const fl=D.MAIM_FLAVOR[loc];
     def.wounds.push({type,loc});
     log(D.maimLog(locName,def.name,fl,def.penalty));
     bannerHtml=D.maimBanner(esc(def.name),fl,def.penalty);
-  }else{
-    type='deep';
+  }else if(eff<=9){
+    type='deep'; btype='kill';
     def.bleed = def.bleed==null ? bleedRounds : Math.min(def.bleed,bleedRounds);
     def.wounds.push({type,loc,bleed:bleedRounds});
     log(D.deepLog(locName,def.name,bleedRounds));
     bannerHtml=D.deepBanner(esc(def.name),locName,bleedRounds);
+  }else if(eff<=11){
+    type='grave'; btype='kill';
+    def.penalty+=2;
+    def.bleed = def.bleed==null ? bleedRounds : Math.min(def.bleed,bleedRounds);
+    def.wounds.push({type,loc,bleed:bleedRounds});
+    if(combat.journey && defKey==='A')combat.journey.tookGrave=true;
+    log(D.graveLog(locName,def.name,bleedRounds,def.penalty));
+    bannerHtml=D.graveBanner(esc(def.name),locName,bleedRounds,def.penalty);
+  }else{
+    type='fatal';
+    def.wounds.push({type,loc});
+    renderCombat();
+    if(canReroll){
+      setBanner('kill',D.fatalRerollBanner(esc(def.name),locName));
+      setControls(
+        `<button class="btn ghost" onclick="rerollWound('${defKey}','${byKey}',${loc})">${D.btnRerollWound(esc(def.name))}</button>`+
+        `<button class="btn blood" onclick="acceptFatal('${defKey}','${byKey}')">${D.btnAcceptFate(esc(def.name))}</button>`);
+    }else{
+      acceptFatal(defKey,byKey);
+    }
+    return;
   }
   renderCombat();
-  const canReroll = def.rerollWounds && !wasReroll;
-  setBanner(eff<=2?'info':eff<=4?'hit':'kill',bannerHtml);
+  setBanner(btype,bannerHtml);
   let ctrl="";
   if(canReroll){
     ctrl+=`<button class="btn ghost" onclick="rerollWound('${defKey}','${byKey}',${loc})">${D.btnRerollWound(esc(def.name))}</button>`;
   }
   nextRoundControls(ctrl);
 }
+function acceptFatal(defKey,byKey){
+  const def=combat[defKey], D=L();
+  const last=def.wounds[def.wounds.length-1];
+  const locName=D.WOUND_LOC[last.loc];
+  def.alive=false;
+  log(D.fatalLog(locName,def.name));
+  renderCombat();
+  setBanner('kill',D.fatalBanner(esc(def.name),locName));
+  endDuel(byKey);
+}
 function rerollWound(defKey,byKey,loc){
   const def=combat[defKey];
   const last=def.wounds.pop();
   if(last && last.type==='maim')def.penalty=Math.max(0,def.penalty-1);
+  if(last && last.type==='grave'){def.penalty=Math.max(0,def.penalty-2);def.bleed=recalcBleed(def);}
   if(last && last.type==='deep')def.bleed=recalcBleed(def);
   log(L().rerollLog(def.name,L().WOUND_LOC[loc]));
   if(manualMode){
     setBanner('hit',L().rerollBanner(esc(def.name)));
-    manualPrompt(L().manualRerollTitle,[{key:'eff',label:L().lblNewEffect,count:1}],
-      v=>finishWound(def,defKey,byKey,loc,v.eff[0],true));
+    manualPrompt(L().manualRerollTitle,[{key:'eff',label:L().lblNewEffect,count:2}],
+      v=>finishWound(def,defKey,byKey,loc,v.eff,true));
   }else{
-    finishWound(def,defKey,byKey,loc,d6(),true);
+    finishWound(def,defKey,byKey,loc,[d6(),d6()],true);
   }
 }
 function recalcBleed(def){
-  const deep=def.wounds.filter(w=>w.type==='deep');
-  if(deep.length===0)return null;
+  const bleeding=def.wounds.filter(w=>w.bleed!=null);
+  if(bleeding.length===0)return null;
   let m=null;
-  deep.forEach(w=>{m=m==null?w.bleed:Math.min(m,w.bleed);});
+  bleeding.forEach(w=>{m=m==null?w.bleed:Math.min(m,w.bleed);});
   return m;
 }
 
@@ -1089,6 +1341,7 @@ function nextRoundControls(extra){
 
 /* ---- FIM DO DUELO ---- */
 function endDuel(winnerKey){
+  if(combat.journey){ journeyDuelEnd(winnerKey); return; }
   combat.phase='over';
   const w=combat[winnerKey], l=combat[otherKey(winnerKey)];
   const src=roster.find(x=>x.id===w.srcId);
@@ -1164,9 +1417,10 @@ function showDice(label,rolls){
   });
   area.innerHTML=html;
 }
-function showDiceWound(loc,eff){
+function showDiceWound(loc,effDice){
   const D=L(), area=document.getElementById('dice-area');
-  const short=eff<=2?D.woundShort.scratch:eff<=4?D.woundShort.maim:D.woundShort.deep;
+  const eff=effDice[0]+effDice[1];
+  const short=eff<=4?D.woundShort.scratch:eff<=7?D.woundShort.maim:eff<=9?D.woundShort.deep:eff<=11?D.woundShort.grave:D.woundShort.fatal;
   area.innerHTML=`
     <div style="text-align:center">
       <div class="small muted" style="margin-bottom:3px">${D.whereShort}</div>
@@ -1176,7 +1430,7 @@ function showDiceWound(loc,eff){
     <div class="plus" style="color:var(--ink-soft)">·</div>
     <div style="text-align:center">
       <div class="small muted" style="margin-bottom:3px">${D.whatShort}</div>
-      ${dieEl(eff)}
+      <div style="display:flex;gap:6px;align-items:center;justify-content:center">${dieEl(effDice[0])}${dieEl(effDice[1])}<span class="chip"><b>${eff}</b></span></div>
       <div class="small" style="margin-top:4px">${short}</div>
     </div>`;
 }
@@ -1192,6 +1446,304 @@ function renderLog(){
   const el=document.getElementById('combat-log');
   el.innerHTML=combat.log.map(e=>e.t==='rnd'?`<div class="rnd">— ${e.html} —</div>`:`<div class="li">${e.html}</div>`).join('');
   el.scrollTop=el.scrollHeight;
+}
+
+/* ============================================================
+   JORNADA — modo solo (MVP: uma cidade)
+============================================================ */
+const JOURNEY_KEY="duels2d6_journey_v1";
+const GRAVE_KEY="duels2d6_graveyard_v1";
+const COST_STAUNCH=3, COST_MAIM=5, COST_PRAY=4, COST_REST=1;
+let journey=loadJourneyState();
+let heroGen=null;
+let cityPanel='broker', cityMsg='';
+
+function loadJourneyState(){try{return JSON.parse(localStorage.getItem(JOURNEY_KEY))||null}catch(e){return null}}
+function saveJourney(){try{localStorage.setItem(JOURNEY_KEY,JSON.stringify(journey))}catch(e){}}
+function clearJourney(){journey=null;try{localStorage.removeItem(JOURNEY_KEY)}catch(e){}}
+function loadGraveyard(){try{return JSON.parse(localStorage.getItem(GRAVE_KEY))||[]}catch(e){return[]}}
+function saveGraveyard(g){try{localStorage.setItem(GRAVE_KEY,JSON.stringify(g))}catch(e){}}
+
+function openJourney(){
+  if(journey){cityPanel='broker';cityMsg='';go('city');return;}
+  heroGen=null;
+  document.getElementById('jname').value="";
+  document.getElementById('jgen-result').innerHTML="";
+  document.getElementById('jgen-save').classList.add('hide');
+  document.getElementById('jgen-roll-btn').classList.remove('hide');
+  go('journey-start');
+}
+function randomHeroName(){document.getElementById('jname').value=randomFullName();}
+function rollHero(){
+  const upRoll=d6();
+  const d={name:"",init:0,combat:0,rerollWounds:false,feathers:d6(),honor:roll2d6().sum,style:d6(),
+    duelsWon:0,penalty:0,bleed:null,wounds:[],traumas:0};
+  d._upCode=applyUpgrade(d,upRoll); d._upRoll=upRoll;
+  heroGen=d; renderHeroGen();
+  document.getElementById('jgen-roll-btn').classList.add('hide');
+  document.getElementById('jgen-save').classList.remove('hide');
+}
+function renderHeroGen(){
+  const d=heroGen, D=L();
+  document.getElementById('jgen-result').innerHTML=`
+    <div class="panel" style="margin-top:12px">
+      <div class="center"><span class="chip gold">${D.lblCreation} ${d._upRoll} → <b>${upgradeText(d._upCode)}</b></span></div>
+      <div class="stats" style="justify-content:center;margin-top:12px">
+        <span class="chip">${D.lblInitiative} <b>${fmt(d.init)}</b></span>
+        <span class="chip">${D.lblCombat} <b>${fmt(d.combat)}</b></span>
+        ${d.rerollWounds?`<span class="chip gold">${D.chipReroll}</span>`:''}
+      </div>
+      <hr class="divider">
+      <p class="small"><b>${D.lblFeathers}</b> ${d.feathers}</p>
+      <p class="small"><b>${D.lblHonor}</b> ${D.HONOR[d.honor]} <span class="muted">(${d.honor})</span></p>
+      <p class="small"><b>${D.lblStyle}</b> ${D.STYLE[d.style]}</p>
+    </div>`;
+}
+function beginJourney(){
+  if(!heroGen)return;
+  let name=document.getElementById('jname').value.trim()||randomFullName();
+  const h=heroGen; h.name=name;
+  delete h._upRoll; delete h._upCode;
+  journey={hero:h, gold:roll2d6().sum, day:1,
+    temple:d6()<=3?'church':'cult', cultUsedDay:0,
+    nextMod:0, purseBoost:false, champion:false,
+    championNpc:genNPC(4), lastEvent:null, offers:[]};
+  journey.offers=makeOffers();
+  heroGen=null;
+  cityPanel='broker'; cityMsg='';
+  saveJourney();
+  go('city');
+}
+
+/* ---- NPCs e ofertas ---- */
+function genNPC(n){
+  const d={id:'npc'+Math.floor(Math.random()*1e9),name:randomFullName(),init:0,combat:0,rerollWounds:false};
+  for(let i=0;i<n;i++)applyUpgrade(d,d6());
+  return d;
+}
+function makeOffers(){
+  return [
+    {tier:0,purse:3,npc:genNPC(0)},
+    {tier:2,purse:7,npc:genNPC(2)},
+    {tier:4,purse:12,npc:journey.championNpc,champion:true},
+  ];
+}
+
+/* ---- dias e eventos da cidade ---- */
+function newDay(extra){
+  journey.day++;
+  journey.offers=makeOffers();
+  const ev=rollCityEvent();
+  journey.lastEvent=(extra?extra+'<br>':'')+ev;
+  saveJourney();
+}
+function rollCityEvent(){
+  const D=L(), r=roll2d6().sum, h=journey.hero;
+  if(r===2){const l=Math.ceil(journey.gold/2);journey.gold-=l;return D.jEvent[2](l);}
+  if(r===3){journey.nextMod=Math.max((journey.nextMod||0)-1,-2);return D.jEvent[3]();}
+  if(r===4){journey.nextMod=Math.max((journey.nextMod||0)-1,-2);return D.jEvent[4]();}
+  if(r===10){const g=d6();journey.gold+=g;return D.jEvent[10](g);}
+  if(r===11){
+    if(h.penalty>0){h.penalty--;const i=h.wounds.findIndex(w=>w.type==='maim');if(i>=0)h.wounds.splice(i,1);return D.jEvent["11h"]();}
+    journey.gold+=2;return D.jEvent["11g"]();
+  }
+  if(r===12){journey.purseBoost=true;return D.jEvent[12]();}
+  return D.jRumorPrefix+pickRand(D.jRumors);
+}
+
+/* ---- cidade ---- */
+function renderCity(){
+  if(!journey){go('home');return;}
+  const D=L(), h=journey.hero;
+  document.getElementById('city-title').textContent=D.cityName;
+  let tags='';
+  if(h.penalty>0)tags+=`<span class="tg maim">${D.tagWounded(h.penalty)}</span>`;
+  if(h.bleed!=null)tags+=`<span class="tg blood">${D.jBleedTag(h.bleed)}</span>`;
+  if(h.traumas>0)tags+=`<span class="tg maim">${D.jTraumaTag(h.traumas)}</span>`;
+  if((journey.nextMod||0)>0)tags+=`<span class="tg">${D.jBlessTag(journey.nextMod)}</span>`;
+  if((journey.nextMod||0)<0)tags+=`<span class="tg maim">${D.jMarkTag(journey.nextMod)}</span>`;
+  if(journey.purseBoost)tags+=`<span class="tg">${D.jBoostTag}</span>`;
+  document.getElementById('city-status').innerHTML=`<div class="frame">
+    <div class="center small muted">${D.jDay(journey.day)} · 🪙 <b>${journey.gold}</b> ${D.jGoldLbl} · ${D.jWins(h.duelsWon)}</div>
+    <h3 style="margin:8px 0 2px;font-size:22px;text-align:center">${esc(h.name)}${journey.champion?' 👑':''}</h3>
+    <div class="stats" style="justify-content:center;margin-top:8px">
+      <span class="chip">${D.lblInitiative} <b>${fmt(h.init)}</b></span>
+      <span class="chip">${D.lblCombat} <b>${fmt(h.combat)}</b></span>
+      ${h.rerollWounds?`<span class="chip gold">${D.chipRerollShort}</span>`:''}
+    </div>
+    <div class="hp-tags" style="justify-content:center;margin-top:8px">${tags||`<span class="tg">${D.tagUnhurt}</span>`}</div>
+  </div>`;
+  document.getElementById('city-event').innerHTML=journey.lastEvent?`<div class="banner info" style="margin-top:10px"><b>${D.jEventTitle}</b>${journey.lastEvent}</div>`:'';
+  const acts=[['broker',D.jBroker],['healer',D.jHealer],[journey.temple,journey.temple==='church'?D.jChurch:D.jCult],['tavern',D.jTavern]];
+  document.getElementById('city-actions').innerHTML=acts.map(([k,lbl])=>
+    `<button class="btn ${cityPanel===k?'gold':'ghost'} sm" style="flex:1 1 45%" onclick="showCityPanel('${k}')">${lbl}</button>`).join('');
+  document.getElementById('city-panel').innerHTML=cityPanelHtml();
+}
+function showCityPanel(k){cityPanel=k;cityMsg='';renderCity();}
+function cityPanelHtml(){
+  const D=L(), h=journey.hero;
+  const msg=cityMsg?`<div class="banner info" style="margin-top:10px">${cityMsg}</div>`:'';
+  if(cityPanel==='broker'){
+    const warn=h.bleed!=null?`<div class="banner kill">${D.jBleedTag(h.bleed)}</div>`:'';
+    return `<div class="frame"><p class="small muted center" style="margin-top:0">${D.jBrokerIntro}</p>${warn}${
+      journey.offers.map((o,i)=>`
+      <div class="panel">
+        <div class="small muted">${D.jTierName[o.tier]}${o.champion?` · <b style="color:var(--gold)">${D.jChampionTag}</b>`:''}</div>
+        <h3 style="margin:2px 0 6px">${esc(o.npc.name)}</h3>
+        <div class="stats">
+          <span class="chip">${D.chipInit} <b>${fmt(o.npc.init)}</b></span>
+          <span class="chip">${D.lblCombat} <b>${fmt(o.npc.combat)}</b></span>
+          ${o.npc.rerollWounds?'<span class="chip gold">↻</span>':''}
+          <span class="chip gold">${D.jPurse(o.purse)}</span>
+        </div>
+        <button class="btn blood sm" style="margin-top:8px" onclick="startJourneyDuel(${i})">${D.btnFight}</button>
+      </div>`).join('')}${msg}</div>`;
+  }
+  if(cityPanel==='healer'){
+    const whole=h.bleed==null&&h.penalty===0;
+    return `<div class="frame"><p class="small muted center" style="margin-top:0">${D.jHealerIntro}</p>
+      ${whole?`<p class="small center">${D.jHealthy}</p>`:''}
+      <button class="btn primary" ${h.bleed==null?'disabled style="opacity:.5"':''} onclick="healerStaunch()">${D.btnStaunch(COST_STAUNCH)}</button>
+      <button class="btn primary" style="margin-top:8px${h.penalty===0?';opacity:.5':''}" ${h.penalty===0?'disabled':''} onclick="healerMaim()">${D.btnHealMaim(COST_MAIM)}</button>
+      ${msg}</div>`;
+  }
+  if(cityPanel==='church'){
+    return `<div class="frame"><p class="small muted center" style="margin-top:0">${D.jChurchIntro}</p>
+      ${h.traumas===0?`<p class="small center">${D.jNoTrauma}</p>`:''}
+      <button class="btn primary" ${h.traumas===0?'disabled style="opacity:.5"':''} onclick="churchPray()">${D.btnPray(COST_PRAY)}</button>
+      ${msg}</div>`;
+  }
+  if(cityPanel==='cult'){
+    const used=journey.cultUsedDay===journey.day;
+    return `<div class="frame"><p class="small muted center" style="margin-top:0">${D.jCultIntro}</p>
+      ${used?`<p class="small center">${D.jCultUsed}</p>`:`<button class="btn primary" onclick="cultRite()">${D.btnRite}</button>`}
+      ${msg}</div>`;
+  }
+  if(cityPanel==='tavern'){
+    return `<div class="frame"><p class="small muted center" style="margin-top:0">${D.jTavernIntro}</p>
+      <button class="btn primary" onclick="tavernRest()">${D.btnRest}</button>
+      <button class="btn ghost sm" style="margin-top:10px;width:100%" onclick="abandonJourney()">${D.btnAbandon}</button>
+      ${msg}</div>`;
+  }
+  return '';
+}
+
+/* ---- serviços ---- */
+function healerStaunch(){
+  const D=L(), h=journey.hero;
+  if(h.bleed==null)return;
+  if(journey.gold<COST_STAUNCH){cityMsg=D.jNoGold;}
+  else{journey.gold-=COST_STAUNCH;h.bleed=null;h.wounds=h.wounds.filter(w=>w.bleed==null);cityMsg='';saveJourney();}
+  renderCity();
+}
+function healerMaim(){
+  const D=L(), h=journey.hero;
+  if(h.penalty===0)return;
+  if(journey.gold<COST_MAIM){cityMsg=D.jNoGold;}
+  else{journey.gold-=COST_MAIM;h.penalty--;const i=h.wounds.findIndex(w=>w.type==='maim');if(i>=0)h.wounds.splice(i,1);cityMsg='';saveJourney();}
+  renderCity();
+}
+function churchPray(){
+  const D=L(), h=journey.hero;
+  if(h.traumas===0)return;
+  if(journey.gold<COST_PRAY){cityMsg=D.jNoGold;}
+  else{journey.gold-=COST_PRAY;h.traumas--;cityMsg='';saveJourney();}
+  renderCity();
+}
+function cultRite(){
+  const D=L(), h=journey.hero;
+  if(journey.cultUsedDay===journey.day)return;
+  journey.cultUsedDay=journey.day;
+  const r=roll2d6().sum;
+  if(r>=8){h.traumas=0;journey.nextMod=Math.min((journey.nextMod||0)+1,2);cityMsg=D.jCultGood(r);}
+  else{journey.nextMod=Math.max((journey.nextMod||0)-1,-2);cityMsg=D.jCultBad(r);}
+  saveJourney();renderCity();
+}
+function tavernRest(){
+  const D=L();
+  if(journey.gold<COST_REST){cityMsg=D.jNoGold;renderCity();return;}
+  journey.gold-=COST_REST;cityMsg='';
+  newDay();renderCity();
+}
+function abandonJourney(){
+  const D=L();
+  if(!confirm(D.confirmAbandon))return;
+  finishJourney(D.jCauseQuit);
+}
+
+/* ---- duelo da jornada ---- */
+function mkHeroFighter(){
+  const h=journey.hero;
+  return {id:'hero',name:h.name,init:h.init,combat:h.combat,rerollWounds:h.rerollWounds,
+    penalty:h.penalty,bleed:h.bleed,wounds:h.wounds.slice(),alive:true,srcId:null,
+    initPen:h.traumas,tempMod:journey.nextMod||0};
+}
+function syncHeroFromFighter(){
+  const f=combat.A, h=journey.hero;
+  h.penalty=f.penalty; h.bleed=f.bleed;
+  h.wounds=f.wounds.filter(w=>w.type!=='scratch');
+  saveJourney();
+}
+function startJourneyDuel(i){
+  const off=journey.offers[i];
+  combat={A:mkHeroFighter(),B:mkFighter(off.npc),round:0,attacker:null,phase:'init',log:[],
+    journey:{purse:off.purse,champion:!!off.champion,tookGrave:false}};
+  go('combat');
+  renderCombat();
+  setBanner('info',`<b>${L().toArms}</b>${L().startMode(manualMode)}${L().startTail}`);
+  setControls(`<button class="btn primary" onclick="rollInitiative()">${L().btnRollInit(manualMode)}</button>`);
+  clearDice();
+}
+function journeyDuelEnd(winnerKey){
+  combat.phase='over';
+  const D=L(), j=combat.journey, h=journey.hero;
+  if(winnerKey==='A'){
+    syncHeroFromFighter();
+    const msgs=[];
+    const purse=j.purse*(journey.purseBoost?2:1); journey.purseBoost=false;
+    journey.gold+=purse; msgs.push(D.jWinPurse(purse,journey.gold));
+    h.duelsWon++;
+    let tg=0;
+    if(combat.A.bleed!=null)tg++;
+    if(j.tookGrave)tg++;
+    if(tg>0){h.traumas+=tg;msgs.push(D.jTraumaGain(tg,h.traumas));}
+    let evoMsg="";
+    if(h.duelsWon%2===0){const r=d6(),code=applyUpgrade(h,r);evoMsg=D.evolveDuelMsg(esc(h.name),h.duelsWon,r,upgradeText(code));}
+    if(j.champion&&!journey.champion){journey.champion=true;msgs.push(D.jChampionMsg);}
+    journey.nextMod=0;
+    saveJourney();
+    setBanner('kill',D.victoryBanner(esc(combat.A.name),esc(combat.B.name)));
+    setControls(evoMsg+msgs.map(m=>`<div class="banner info">${m}</div>`).join('')+
+      `<div class="btn-row"><button class="btn gold" onclick="returnToCity()">${D.btnBackCity}</button></div>`);
+  }else{
+    setBanner('kill',D.victoryBanner(esc(combat.B.name),esc(combat.A.name)));
+    setControls(`<button class="btn blood" onclick="journeyDeath()">${D.btnSeeEnd}</button>`);
+  }
+}
+function returnToCity(){
+  newDay();
+  cityPanel='broker'; cityMsg='';
+  go('city');
+}
+function journeyDeath(){
+  const D=L();
+  const cause=combat&&combat.B?D.jCauseDuel(combat.B.name):D.jCauseQuit;
+  finishJourney(cause);
+}
+function finishJourney(cause){
+  const D=L(), h=journey.hero;
+  const g=loadGraveyard();
+  g.unshift({name:h.name,day:journey.day,wins:h.duelsWon,gold:journey.gold,cause});
+  saveGraveyard(g.slice(0,20));
+  document.getElementById('jend-summary').innerHTML=D.jEndSummary(esc(h.name),journey.day,h.duelsWon,journey.gold,esc(cause));
+  clearJourney();
+  go('journey-end');
+  renderGraveyard();
+}
+function renderGraveyard(){
+  const D=L(), g=loadGraveyard();
+  const el=document.getElementById('graveyard-list');
+  el.innerHTML=g.length?g.map(e=>`<div class="li">${D.jGraveLine(esc(e.name),e.day,e.wins,esc(e.cause))}</div>`).join(''):`<div class="li">${D.jGraveEmpty}</div>`;
 }
 
 /* ============================================================
